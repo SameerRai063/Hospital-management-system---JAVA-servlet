@@ -181,7 +181,7 @@ a:hover {
 
 .meta-grid {
     grid-template-columns: 1.15fr 0.85fr;
-    align-items: start;
+    align-items: stretch;
 }
 
 .panel {
@@ -205,6 +205,7 @@ a:hover {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
+    width: 100%;
 }
 
 .stat-card {
