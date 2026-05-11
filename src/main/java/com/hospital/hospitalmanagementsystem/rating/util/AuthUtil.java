@@ -52,12 +52,13 @@ public class AuthUtil {
         if (session != null) {
             Object role = session.getAttribute("role");
             if (role instanceof String && !((String) role).isBlank()) {
-                return (String) role;
+                return ((String) role).toUpperCase();
             }
 
             Object loggedInUser = session.getAttribute("loggedInUser");
             if (loggedInUser instanceof User) {
-                return ((User) loggedInUser).getRole();
+                String userRole = ((User) loggedInUser).getRole();
+                return (userRole == null || userRole.isBlank()) ? null : userRole.toUpperCase();
             }
         }
         return null;

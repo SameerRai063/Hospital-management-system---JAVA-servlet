@@ -9,6 +9,18 @@
         response.sendRedirect(request.getContextPath() + AuthUtil.getDashboardPath(request));
         return;
     }
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Patient";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "PATIENT";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,8 +34,8 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Patient portal</div>
-        <h1>Welcome back, patient.</h1>
-        <p>Manage your care experience from one place. Leave feedback after visits, rate your doctor, and review your activity history.</p>
+        <h1>Welcome back, <%= displayName %>.</h1>
+        <p>Your <%= displayRole.toLowerCase() %> portal is connected to the backend session, so you can rate visits, leave feedback, and review history without leaving this page.</p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Back to Home</a>
             <a class="link-btn link-btn-soft" href="${pageContext.request.contextPath}/ratings">Open My Ratings</a>
@@ -32,9 +44,9 @@
 
     <section class="summary-grid">
         <div class="stat-card">
-            <div class="stat-label">Experience</div>
-            <div class="stat-value">Simple</div>
-            <div class="stat-note">Rate appointments and share feedback in a few clicks.</div>
+            <div class="stat-label">Signed in as</div>
+            <div class="stat-value"><%= displayName %></div>
+            <div class="stat-note">Role: <%= displayRole %> • Session-backed UI context.</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Access</div>
@@ -50,29 +62,29 @@
 
     <section class="action-grid">
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">♥</span> Rate & Feedback Center</div>
-            <p>Open the combined page to submit both your rating and feedback in one modern interface.</p>
+            <div class="action-title"><span class="action-icon">★</span> Rate & Leave Feedback</div>
+            <p>Share your rating and feedback about your doctor visit in one simple form.</p>
             <div class="quick-links">
-                <a class="btn btn-primary" href="${pageContext.request.contextPath}/patient-care.jsp">Open Center</a>
+                <a class="btn btn-primary" href="${pageContext.request.contextPath}/patient-care.jsp">Rate Now</a>
             </div>
         </article>
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">★</span> My Ratings</div>
-            <p>View all ratings you have submitted and manage your doctor reviews from a clean list.</p>
+            <div class="action-title"><span class="action-icon">📋</span> My Ratings & Feedback</div>
+            <p>View all your submitted ratings and feedback about past doctors and visits.</p>
             <div class="quick-links">
-                <a class="btn btn-primary" href="${pageContext.request.contextPath}/ratings">Open Ratings</a>
+                <a class="btn btn-primary" href="${pageContext.request.contextPath}/ratings">View History</a>
             </div>
         </article>
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">💬</span> Leave Feedback</div>
-            <p>Share your experience in detail so your care team can improve future visits.</p>
+            <div class="action-title"><span class="action-icon">ℹ️</span> Help & Support</div>
+            <p>Need help? Return to home page or contact support for assistance.</p>
             <div class="quick-links">
-                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/feedback/add-feedback.jsp">Give Feedback</a>
+                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Go Home</a>
             </div>
         </article>
     </section>
 
-    <div class="footer-note">Use the cards above to move between rating and feedback features.</div>
+    <div class="footer-note">Use the cards above to move between rating and feedback features. Avatar: <%= userInitial %></div>
 </div>
 </body>
 </html>

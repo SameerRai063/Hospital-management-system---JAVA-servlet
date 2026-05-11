@@ -14,6 +14,18 @@
     String doctorId = request.getParameter("doctorId");
     String doctorName = request.getParameter("doctorName");
     String appointmentDate = request.getParameter("appointmentDate");
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Patient";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "PATIENT";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,8 +39,8 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Patient care center</div>
-        <h1>Rate your visit and leave feedback in one place.</h1>
-        <p>This page keeps your doctor rating and feedback form together, so you can submit everything without jumping between pages.</p>
+        <h1>Rate & Feedback Center • <%= displayName %></h1>
+        <p>Your <%= displayRole.toLowerCase() %> workspace combined rating and feedback in one place. Session-backed backend context. Avatar: <%= userInitial %></p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="${pageContext.request.contextPath}/patient_dashboard.jsp">Back to Dashboard</a>
             <a class="link-btn link-btn-soft" href="${pageContext.request.contextPath}/ratings">My Ratings</a>
@@ -38,9 +50,9 @@
 
     <section class="summary-grid">
         <div class="stat-card">
-            <div class="stat-label">One page</div>
-            <div class="stat-value">Unified</div>
-            <div class="stat-note">Submit a rating and feedback without opening multiple screens.</div>
+            <div class="stat-label">Signed in as</div>
+            <div class="stat-value"><%= displayName %></div>
+            <div class="stat-note">Role: <%= displayRole %> • Session-backed UI context.</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Style</div>
@@ -54,14 +66,14 @@
         </div>
     </section>
 
-    <div class="meta-grid">
+    <div style="max-width: 600px; margin: 32px auto; text-align: center;">
         <section class="form-card">
             <div class="section-title">
                 <div>
-                    <h2>Doctor rating</h2>
-                    <p>Rate your completed appointment.</p>
+                    <h2>Rate Your Doctor Visit</h2>
+                    <p>Share your experience and feedback about this appointment.</p>
                 </div>
-                <span class="badge badge-blue">Rating</span>
+                <span class="badge badge-blue">Rating & Feedback</span>
             </div>
 
             <form method="post" action="${pageContext.request.contextPath}/AddRatingServlet" class="stack">
@@ -72,10 +84,10 @@
                     </div>
                     <div class="field">
                         <label for="doctorId">Doctor ID</label>
-                        <input id="doctorId" type="number" name="doctorId" min="1" placeholder="e.g. 5" value="<%= doctorId == null ? "" : doctorId %>">
+                        <input id="doctorId" type="number" name="doctorId" min="1" placeholder="e.g. 5" required value="<%= doctorId == null ? "" : doctorId %>">
                     </div>
                     <div class="field full">
-                        <label for="score">Your rating</label>
+                        <label for="score">Your Rating</label>
                         <select id="score" name="score" required>
                             <option value="">Select rating</option>
                             <option value="5">5 - Excellent</option>
@@ -86,57 +98,13 @@
                         </select>
                     </div>
                     <div class="field full">
-                        <label for="review">Review</label>
-                        <textarea id="review" name="review" maxlength="1000" placeholder="Share a few lines about your experience."></textarea>
+                        <label for="review">Your Feedback (Optional)</label>
+                        <textarea id="review" name="review" maxlength="1000" placeholder="Share your experience about the doctor, staff, and visit. What went well? What could be improved?"></textarea>
                     </div>
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Submit Rating</button>
-                    <a class="btn btn-secondary" href="${pageContext.request.contextPath}/rating/add-rating.jsp">Open Old Rating Page</a>
-                </div>
-            </form>
-        </section>
-
-        <section class="form-card">
-            <div class="section-title">
-                <div>
-                    <h2>Feedback form</h2>
-                    <p>Leave broader feedback about the visit.</p>
-                </div>
-                <span class="badge badge-green">Feedback</span>
-            </div>
-
-            <form method="post" action="${pageContext.request.contextPath}/submitFeedback" class="stack">
-                <div class="form-grid">
-                    <div class="field">
-                        <label for="appointment_id">Appointment ID</label>
-                        <input id="appointment_id" type="number" name="appointment_id" min="1" placeholder="e.g. 12" required value="<%= appointmentId == null ? "" : appointmentId %>">
-                    </div>
-                    <div class="field">
-                        <label for="doctor_id">Doctor ID</label>
-                        <input id="doctor_id" type="number" name="doctor_id" min="1" placeholder="e.g. 5" required value="<%= doctorId == null ? "" : doctorId %>">
-                    </div>
-                    <div class="field full">
-                        <label for="rating">Overall rating</label>
-                        <select id="rating" name="rating" required>
-                            <option value="">Select rating</option>
-                            <option value="5">5 - Excellent</option>
-                            <option value="4">4 - Good</option>
-                            <option value="3">3 - Average</option>
-                            <option value="2">2 - Needs improvement</option>
-                            <option value="1">1 - Poor</option>
-                        </select>
-                    </div>
-                    <div class="field full">
-                        <label for="comment">Comment</label>
-                        <textarea id="comment" name="comment" placeholder="Tell us what went well and what could be improved."></textarea>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
-                    <a class="btn btn-secondary" href="${pageContext.request.contextPath}/feedback/add-feedback.jsp">Open Old Feedback Page</a>
+                <div class="form-actions" style="justify-content: center;">
+                    <button type="submit" class="btn btn-primary">Submit Rating & Feedback</button>
                 </div>
             </form>
         </section>

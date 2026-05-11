@@ -1,7 +1,24 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="com.hospital.hospitalmanagementsystem.rating.util.AuthUtil" %>
 <%
     String message = request.getParameter("message");
     if (message == null || message.isBlank()) message = "Done";
+
+    String displayName = "Guest";
+    String displayRole = "UNKNOWN";
+    char userInitial = 'G';
+
+    if (AuthUtil.isLoggedIn(request)) {
+        String username = AuthUtil.getUsername(request);
+        if (username != null && !username.isBlank()) {
+            displayName = username;
+        }
+        String role = AuthUtil.getUserRole(request);
+        if (role != null && !role.isBlank()) {
+            displayRole = role;
+        }
+    }
+    userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,7 +32,7 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Rating status</div>
-        <h1>Your action was processed.</h1>
+        <h1>Action Processed • <%= displayName %></h1>
         <p><%= message %></p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="<%=request.getContextPath()%>/patient-care.jsp">Back to Center</a>
@@ -27,7 +44,7 @@
         <div class="stat-card">
             <div class="stat-label">Status</div>
             <div class="stat-value">Success</div>
-            <div class="stat-note">The latest operation completed successfully.</div>
+            <div class="stat-note">Operation completed successfully. Session: <%= displayRole %> | Avatar: <%= userInitial %></div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Next step</div>

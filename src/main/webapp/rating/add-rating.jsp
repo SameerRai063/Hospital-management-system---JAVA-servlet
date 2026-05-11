@@ -15,6 +15,18 @@
     String doctorName = request.getParameter("doctorName");
     String appointmentDate = request.getParameter("appointmentDate");
     String error = (String) request.getAttribute("error");
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Patient";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "PATIENT";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,8 +41,8 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Doctor rating</div>
-        <h1>Share your rating after a completed appointment.</h1>
-        <p>This streamlined form keeps your doctor rating consistent with the feedback center and your dashboard.</p>
+        <h1>Share Your Rating • <%= displayName %></h1>
+        <p>Your <%= displayRole.toLowerCase() %> form is connected to the backend session. Avatar: <%= userInitial %></p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="<%=request.getContextPath()%>/patient-care.jsp">Open Combined Center</a>
             <a class="link-btn link-btn-soft" href="<%=request.getContextPath()%>/ViewRatingServlet">My Ratings</a>

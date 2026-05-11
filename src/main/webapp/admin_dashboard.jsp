@@ -9,6 +9,18 @@
         response.sendRedirect(request.getContextPath() + AuthUtil.getDashboardPath(request));
         return;
     }
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Admin";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "ADMIN";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,8 +34,8 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Admin control center</div>
-        <h1>Manage ratings and feedback.</h1>
-        <p>Monitor patient reviews, inspect feedback submissions, and keep the hospital experience organized.</p>
+        <h1>Welcome back, <%= displayName %>.</h1>
+        <p>Your <%= displayRole.toLowerCase() %> control center is connected to the backend session, so ratings and feedback reflect live hospital activity.</p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Back to Home</a>
             <a class="link-btn link-btn-soft" href="${pageContext.request.contextPath}/ratings">Open Ratings</a>
@@ -32,9 +44,9 @@
 
     <section class="summary-grid">
         <div class="stat-card">
-            <div class="stat-label">Visibility</div>
-            <div class="stat-value">All</div>
-            <div class="stat-note">Review every rating and feedback entry in one place.</div>
+            <div class="stat-label">Signed in as</div>
+            <div class="stat-value"><%= displayName %></div>
+            <div class="stat-note">Role: <%= displayRole %> • Session-backed UI context.</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Response</div>
@@ -50,29 +62,29 @@
 
     <section class="action-grid">
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">★</span> Manage Ratings</div>
-            <p>View, edit, and delete submitted ratings from the management panel.</p>
+            <div class="action-title"><span class="action-icon">★</span> Manage Ratings & Feedback</div>
+            <p>View, review, and manage all patient ratings and feedback from the system.</p>
             <div class="quick-links">
-                <a class="btn btn-primary" href="${pageContext.request.contextPath}/ratings">Open Ratings</a>
+                <a class="btn btn-primary" href="${pageContext.request.contextPath}/ratings">View All Ratings</a>
             </div>
         </article>
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">💬</span> Feedback Inbox</div>
-            <p>Read patient feedback submissions and inspect the latest comments.</p>
+            <div class="action-title"><span class="action-icon">📊</span> Hospital Insights</div>
+            <p>Monitor quality metrics and patient satisfaction across all doctors and services.</p>
             <div class="quick-links">
-                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/feedbacks">View Feedback</a>
+                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Go Home</a>
             </div>
         </article>
         <article class="action-card">
             <div class="action-title"><span class="action-icon">⌂</span> Home</div>
-            <p>Return to the main landing page whenever you need to switch context.</p>
+            <p>Return to the main landing page whenever you need to switch context or modules.</p>
             <div class="quick-links">
                 <a class="btn btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Go Home</a>
             </div>
         </article>
     </section>
 
-    <div class="footer-note">Use the actions above to manage hospital ratings and feedback efficiently.</div>
+    <div class="footer-note">Use the actions above to manage hospital ratings and feedback efficiently. Avatar: <%= userInitial %></div>
 </div>
 </body>
 </html>

@@ -12,6 +12,18 @@
     }
 
     String dashboardPath = request.getContextPath() + AuthUtil.getDashboardPath(request);
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Patient";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "PATIENT";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,13 +37,21 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Patient feedback</div>
-        <h1>Share your visit experience.</h1>
-        <p>Help the hospital improve by leaving feedback about your appointment. Keep your feedback short, honest, and helpful.</p>
+        <h1>Share Your Experience • <%= displayName %></h1>
+        <p>Your <%= displayRole.toLowerCase() %> feedback form is connected to the backend session. Keep your feedback short, honest, and helpful. Avatar: <%= userInitial %></p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="<%=dashboardPath%>">Back to Dashboard</a>
             <a class="link-btn link-btn-soft" href="<%=request.getContextPath()%>/ratings">View My Ratings</a>
         </div>
     </section>
+
+    <div class="summary-grid">
+        <div class="stat-card">
+            <div class="stat-label">Signed in as</div>
+            <div class="stat-value"><%= displayName %></div>
+            <div class="stat-note">Role: <%= displayRole %> • Session-backed UI context.</div>
+        </div>
+    </div>
 
     <div class="meta-grid">
         <div class="form-card">

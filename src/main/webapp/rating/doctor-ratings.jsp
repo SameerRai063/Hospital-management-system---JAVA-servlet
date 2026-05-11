@@ -4,11 +4,11 @@
 <%@ page import="com.hospital.hospitalmanagementsystem.rating.util.AuthUtil" %>
 <%
     if (!AuthUtil.isLoggedIn(request)) {
-        response.sendRedirect(request.getContextPath() + "/LoginServlet");
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
     if (!AuthUtil.isDoctor(request)) {
-        response.sendRedirect(request.getContextPath() + "/rating/rating-success.jsp?message=Access%20Denied");
+        response.sendRedirect(request.getContextPath() + AuthUtil.getDashboardPath(request));
         return;
     }
 
@@ -22,6 +22,18 @@
         Rating firstRating = ratings.isEmpty() ? null : ratings.get(0);
         doctorPhoto = firstRating == null ? null : firstRating.getDoctorPhoto();
     }
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Doctor";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "DOCTOR";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html>
@@ -33,8 +45,8 @@
 <body>
 <div class="page">
     <div class="topbar">
-        <h1>Upachar • Doctor Ratings</h1>
-        <div class="sub">Feedback received from patients</div>
+        <h1>Upachar • Doctor Ratings • <%= displayName %></h1>
+        <div class="sub">Feedback received from patients. Session: <%= displayRole %></div>
     </div>
 
     <div class="card">

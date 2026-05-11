@@ -9,6 +9,18 @@
     }
 
     String dashboardPath = request.getContextPath() + AuthUtil.getDashboardPath(request);
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "User";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "USER";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,8 +34,8 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Feedback overview</div>
-        <h1>See what patients are saying.</h1>
-        <p>Feedback is organized in a simple, readable table so doctors and admins can quickly understand what needs attention.</p>
+        <h1>Feedback Overview • <%= displayName %></h1>
+        <p>Feedback is organized in a simple, readable table. Session: <%= displayRole %>. Avatar: <%= userInitial %></p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="<%=dashboardPath%>">Back to Dashboard</a>
             <a class="link-btn link-btn-soft" href="<%=request.getContextPath()%>/feedback/add-feedback.jsp">Add Feedback</a>
@@ -32,9 +44,9 @@
 
     <div class="summary-grid">
         <div class="stat-card">
-            <div class="stat-label">Current page</div>
-            <div class="stat-value">Feedbacks</div>
-            <div class="stat-note">A centralized view for submitted patient comments.</div>
+            <div class="stat-label">Signed in as</div>
+            <div class="stat-value"><%= displayName %></div>
+            <div class="stat-note">Role: <%= displayRole %> • Session-backed UI context.</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Focus</div>

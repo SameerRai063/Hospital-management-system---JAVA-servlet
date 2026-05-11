@@ -1,5 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ page import="com.hospital.hospitalmanagementsystem.rating.util.AuthUtil" %>
+<%
+    if (AuthUtil.isLoggedIn(request)) {
+        response.sendRedirect(request.getContextPath() + AuthUtil.getDashboardPath(request));
+        return;
+    }
+%>
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>

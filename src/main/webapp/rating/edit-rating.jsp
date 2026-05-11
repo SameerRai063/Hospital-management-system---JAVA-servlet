@@ -13,6 +13,18 @@
 
     Rating rating = (Rating) request.getAttribute("rating");
     String error = (String) request.getAttribute("error");
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "User";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "USER";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html>
@@ -24,8 +36,8 @@
 <body>
 <div class="page">
     <div class="topbar">
-        <h1>Upachar • Edit Rating</h1>
-        <div class="sub">Update your rating and review</div>
+        <h1>Upachar • Edit Rating • <%= displayName %></h1>
+        <div class="sub">Update your rating and review. Session: <%= displayRole %> | Avatar: <%= userInitial %></div>
     </div>
 
     <div class="card">

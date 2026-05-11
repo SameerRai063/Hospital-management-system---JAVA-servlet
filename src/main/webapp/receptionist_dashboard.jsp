@@ -9,6 +9,18 @@
         response.sendRedirect(request.getContextPath() + AuthUtil.getDashboardPath(request));
         return;
     }
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Receptionist";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "RECEPTIONIST";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,8 +34,8 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Reception desk</div>
-        <h1>Support the front desk workflow.</h1>
-        <p>Keep the main entry point organized and quickly jump back to the home page or service sections.</p>
+        <h1>Welcome back, <%= displayName %>.</h1>
+        <p>Your <%= displayRole.toLowerCase() %> workspace is connected to the backend session, so front-desk navigation reflects the live account.</p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Back to Home</a>
             <a class="link-btn link-btn-soft" href="${pageContext.request.contextPath}/feedbacks">Open Feedback</a>
@@ -32,9 +44,9 @@
 
     <section class="summary-grid">
         <div class="stat-card">
-            <div class="stat-label">Workflow</div>
-            <div class="stat-value">Smooth</div>
-            <div class="stat-note">Use simple navigation to keep tasks moving.</div>
+            <div class="stat-label">Signed in as</div>
+            <div class="stat-value"><%= displayName %></div>
+            <div class="stat-note">Role: <%= displayRole %> • Session-backed UI context.</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Visibility</div>
@@ -50,17 +62,17 @@
 
     <section class="action-grid">
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">💬</span> Feedback</div>
-            <p>Open patient feedback to review comments and service trends.</p>
+            <div class="action-title"><span class="action-icon">★</span> View Ratings & Feedback</div>
+            <p>Check patient ratings and feedback to support front-desk operations and customer service.</p>
             <div class="quick-links">
-                <a class="btn btn-primary" href="${pageContext.request.contextPath}/feedbacks">View Feedback</a>
+                <a class="btn btn-primary" href="${pageContext.request.contextPath}/feedbacks">View All</a>
             </div>
         </article>
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">💬</span> Feedback</div>
-            <p>Jump to feedback pages to see the latest patient comments.</p>
+            <div class="action-title"><span class="action-icon">📞</span> Patient Support</div>
+            <p>Help patients with inquiries and direct them to appropriate services or staff.</p>
             <div class="quick-links">
-                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/feedbacks">View Feedback</a>
+                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Go Home</a>
             </div>
         </article>
         <article class="action-card">
@@ -72,7 +84,7 @@
         </article>
     </section>
 
-    <div class="footer-note">A clean front-desk dashboard keeps navigation simple and fast.</div>
+    <div class="footer-note">A clean front-desk dashboard keeps navigation simple and fast. Avatar: <%= userInitial %></div>
 </div>
 </body>
 </html>

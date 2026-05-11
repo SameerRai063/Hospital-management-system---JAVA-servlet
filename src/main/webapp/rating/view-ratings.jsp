@@ -18,6 +18,18 @@
     List<Rating> ratings = (List<Rating>) request.getAttribute("ratings");
     if (ratings == null) ratings = Collections.emptyList();
     request.setAttribute("ratings", ratings);
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Admin";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "ADMIN";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html>
@@ -29,8 +41,8 @@
 <body>
 <div class="page">
     <div class="topbar">
-        <h1>Upachar • Admin Ratings</h1>
-        <div class="sub">All doctor ratings are visible here with full management actions.</div>
+        <h1>Upachar • Admin Ratings • <%= displayName %></h1>
+        <div class="sub">All doctor ratings viewable here with full management actions. Session: <%= displayRole %></div>
     </div>
 
     <div class="card">

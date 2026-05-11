@@ -21,6 +21,18 @@
 
     Integer userId = AuthUtil.getUserId(request);
     request.setAttribute("userId", userId);
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Patient";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "PATIENT";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html>
@@ -32,8 +44,8 @@
 <body>
 <div class="page">
     <div class="topbar">
-        <h1>Upachar • My Ratings</h1>
-        <div class="sub">View, edit, and delete only your own doctor ratings.</div>
+        <h1>Upachar • My Ratings • <%= displayName %></h1>
+        <div class="sub">View, edit, and delete your own doctor ratings. Session: <%= displayRole %></div>
     </div>
 
     <div class="card">

@@ -9,6 +9,18 @@
         response.sendRedirect(request.getContextPath() + AuthUtil.getDashboardPath(request));
         return;
     }
+
+    String displayName = AuthUtil.getUsername(request);
+    if (displayName == null || displayName.isBlank()) {
+        displayName = "Doctor";
+    }
+
+    String displayRole = AuthUtil.getUserRole(request);
+    if (displayRole == null || displayRole.isBlank()) {
+        displayRole = "DOCTOR";
+    }
+
+    char userInitial = Character.toUpperCase(displayName.charAt(0));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,8 +34,8 @@
 <div class="dashboard-shell">
     <section class="hero">
         <div class="hero-kicker">Doctor workspace</div>
-        <h1>Track ratings and patient feedback.</h1>
-        <p>See how your patients feel, review feedback, and keep improving the consultation experience.</p>
+        <h1>Welcome back, <%= displayName %>.</h1>
+        <p>Your <%= displayRole.toLowerCase() %> workspace is connected to the backend session, so ratings and feedback reflect your live account.</p>
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Back to Home</a>
             <a class="link-btn link-btn-soft" href="${pageContext.request.contextPath}/ratings">Open Ratings</a>
@@ -32,9 +44,9 @@
 
     <section class="summary-grid">
         <div class="stat-card">
-            <div class="stat-label">Doctor view</div>
-            <div class="stat-value">Focused</div>
-            <div class="stat-note">Review only your ratings and patient feedback.</div>
+            <div class="stat-label">Signed in as</div>
+            <div class="stat-value"><%= displayName %></div>
+            <div class="stat-note">Role: <%= displayRole %> • Session-backed UI context.</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Improvement</div>
@@ -50,29 +62,29 @@
 
     <section class="action-grid">
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">★</span> My Ratings</div>
-            <p>Inspect the ratings you received from patients and monitor service quality.</p>
+            <div class="action-title"><span class="action-icon">★</span> Patient Ratings & Feedback</div>
+            <p>View all ratings and feedback received from your patients about your doctor services.</p>
             <div class="quick-links">
                 <a class="btn btn-primary" href="${pageContext.request.contextPath}/ratings">View Ratings</a>
             </div>
         </article>
         <article class="action-card">
-            <div class="action-title"><span class="action-icon">💬</span> Patient Feedback</div>
-            <p>Read submitted feedback and better understand patient expectations.</p>
+            <div class="action-title"><span class="action-icon">📊</span> Performance Insights</div>
+            <p>Track patient satisfaction and use feedback to improve your consultation experience.</p>
             <div class="quick-links">
-                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/feedbacks">View Feedback</a>
+                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Go Home</a>
             </div>
         </article>
         <article class="action-card">
             <div class="action-title"><span class="action-icon">⌂</span> Home</div>
-            <p>Return to the home page whenever you need to switch modules.</p>
+            <p>Return to the home page whenever you need to switch modules or log out.</p>
             <div class="quick-links">
                 <a class="btn btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Go Home</a>
             </div>
         </article>
     </section>
 
-    <div class="footer-note">Your dashboard keeps ratings and feedback within easy reach.</div>
+    <div class="footer-note">Your dashboard keeps ratings and feedback within easy reach. Avatar: <%= userInitial %></div>
 </div>
 </body>
 </html>
