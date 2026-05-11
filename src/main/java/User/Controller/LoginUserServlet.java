@@ -69,6 +69,7 @@ public class LoginUserServlet extends HttpServlet {
                     LOG.info("Login success for email=" + email + " role=patient -> redirecting to patient_dashboard.jsp");
                     response.sendRedirect(request.getContextPath() + "/patient_dashboard.jsp");
 
+
                 } else if ("admin".equalsIgnoreCase(role)) {
                     LOG.info("Login success for email=" + email + " role=admin -> redirecting to admin_dashboard.jsp");
                     response.sendRedirect(request.getContextPath() + "/admin_dashboard.jsp");

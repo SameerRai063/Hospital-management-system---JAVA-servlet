@@ -175,7 +175,8 @@ a:hover {
 }
 
 .action-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    max-width: 100%;
 }
 
 .meta-grid {

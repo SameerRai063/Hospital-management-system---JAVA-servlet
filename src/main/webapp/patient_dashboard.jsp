@@ -75,13 +75,6 @@
                 <a class="btn btn-primary" href="${pageContext.request.contextPath}/ratings">View History</a>
             </div>
         </article>
-        <article class="action-card">
-            <div class="action-title"><span class="action-icon">ℹ️</span> Help & Support</div>
-            <p>Need help? Return to home page or contact support for assistance.</p>
-            <div class="quick-links">
-                <a class="btn btn-secondary" href="${pageContext.request.contextPath}/index.jsp">Go Home</a>
-            </div>
-        </article>
     </section>
 
     <div class="footer-note">Use the cards above to move between rating and feedback features. Avatar: <%= userInitial %></div>

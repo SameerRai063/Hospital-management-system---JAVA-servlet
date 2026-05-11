@@ -44,7 +44,6 @@
         <div class="hero-actions">
             <a class="link-btn link-btn-secondary" href="${pageContext.request.contextPath}/patient_dashboard.jsp">Back to Dashboard</a>
             <a class="link-btn link-btn-soft" href="${pageContext.request.contextPath}/ratings">My Ratings</a>
-            <a class="link-btn link-btn-soft" href="${pageContext.request.contextPath}/feedback/add-feedback.jsp">Feedback Only</a>
         </div>
     </section>
 
