@@ -1,5 +1,6 @@
 package com.hospital.hospitalmanagementsystem.rating.util;
 
+import User.Model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -10,7 +11,15 @@ public class AuthUtil {
      */
     public static boolean isLoggedIn(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        return session != null && session.getAttribute("userId") != null;
+        if (session == null) {
+            return false;
+        }
+
+        if (session.getAttribute("userId") != null) {
+            return true;
+        }
+
+        return session.getAttribute("loggedInUser") instanceof User;
     }
 
     /**
@@ -23,6 +32,14 @@ public class AuthUtil {
             if (userId instanceof Integer) {
                 return (Integer) userId;
             }
+            if (userId instanceof Number) {
+                return ((Number) userId).intValue();
+            }
+
+            Object loggedInUser = session.getAttribute("loggedInUser");
+            if (loggedInUser instanceof User) {
+                return ((User) loggedInUser).getId();
+            }
         }
         return null;
     }
@@ -33,7 +50,15 @@ public class AuthUtil {
     public static String getUserRole(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            return (String) session.getAttribute("role");
+            Object role = session.getAttribute("role");
+            if (role instanceof String && !((String) role).isBlank()) {
+                return (String) role;
+            }
+
+            Object loggedInUser = session.getAttribute("loggedInUser");
+            if (loggedInUser instanceof User) {
+                return ((User) loggedInUser).getRole();
+            }
         }
         return null;
     }
@@ -60,12 +85,51 @@ public class AuthUtil {
     }
 
     /**
+     * Check if user is RECEPTIONIST
+     */
+    public static boolean isReceptionist(HttpServletRequest request) {
+        return "RECEPTIONIST".equals(getUserRole(request));
+    }
+
+    /**
+     * Resolve the dashboard page for the current role.
+     */
+    public static String getDashboardPath(HttpServletRequest request) {
+        String role = getUserRole(request);
+        if (role == null) {
+            return "/index.jsp";
+        }
+
+        switch (role.toUpperCase()) {
+            case "ADMIN":
+                return "/admin_dashboard.jsp";
+            case "DOCTOR":
+                return "/doctor_dashboard.jsp";
+            case "RECEPTIONIST":
+                return "/receptionist_dashboard.jsp";
+            case "PATIENT":
+                return "/patient_dashboard.jsp";
+            default:
+                return "/index.jsp";
+        }
+    }
+
+    /**
      * Get username from session
      */
     public static String getUsername(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            return (String) session.getAttribute("username");
+            Object username = session.getAttribute("username");
+            if (username instanceof String && !((String) username).isBlank()) {
+                return (String) username;
+            }
+
+            Object loggedInUser = session.getAttribute("loggedInUser");
+            if (loggedInUser instanceof User) {
+                User user = (User) loggedInUser;
+                return user.getEmail() != null ? user.getEmail() : user.getName();
+            }
         }
         return null;
     }

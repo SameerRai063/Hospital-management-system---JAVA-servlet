@@ -6,11 +6,11 @@
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%
     if (!AuthUtil.isLoggedIn(request)) {
-        response.sendRedirect(request.getContextPath() + "/LoginServlet");
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
     if (!AuthUtil.isPatient(request)) {
-        response.sendRedirect(request.getContextPath() + "/rating/rating-success.jsp?message=Access%20Denied");
+        response.sendRedirect(request.getContextPath() + AuthUtil.getDashboardPath(request));
         return;
     }
 

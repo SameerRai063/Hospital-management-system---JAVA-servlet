@@ -1,3 +1,52 @@
+/* Navigation/Header styles */
+.navbar {
+    background: linear-gradient(135deg, rgba(38, 77, 115, 0.98), rgba(28, 142, 164, 0.92));
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(20, 42, 68, 0.12);
+    margin-bottom: 0;
+}
+
+.navbar-brand {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.navbar-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.navbar-link,
+.logout-btn {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.navbar-link:hover,
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.logout-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
 /* Shared dashboard UI for login destinations and feedback pages */
 :root {
     --bg: #eef4fb;
@@ -102,6 +151,9 @@ a:hover {
     color: rgba(255, 255, 255, 0.88);
     font-size: 16px;
     line-height: 1.6;
+    text-decoration: none;
+    position: relative;
+    z-index: 1;
 }
 
 .hero-actions {

@@ -56,6 +56,11 @@ public class LoginUserServlet extends HttpServlet {
                 // Login Successful! Create the session
                 HttpSession session = request.getSession();
                 session.setAttribute("loggedInUser", user);
+                session.setAttribute("userId", user.getId());
+                session.setAttribute("username", user.getEmail());
+                session.setAttribute("role", user.getRole() == null ? null : user.getRole().toUpperCase());
+                session.setAttribute("firstName", user.getName());
+                session.setAttribute("lastName", "");
 
                 // Route to the correct dashboard based on their role
                 String role = user.getRole();

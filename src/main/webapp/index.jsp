@@ -22,5 +22,5 @@
         return;
     }
 
-    response.sendRedirect(request.getContextPath() + "/LoginServlet");
+    response.sendRedirect(request.getContextPath() + "/login.jsp");
 %>
