@@ -7,11 +7,11 @@
     String userRole = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "Super Admin";
     String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
-    // Mock statistics (ideally passed from the backend via request attributes)
+    // Mock statistics
     int totalDoctors = 24;
     int totalPatients = 156;
     int appointmentsToday = 12;
-    String pendingInvoices = "NPR 45,000";
+    String pendingInvoices = "NPR 45,000"; // This variable now represents Total Amount
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -467,7 +467,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <h3>Pending Invoices</h3>
+                    <h3>Total Amount</h3> <!-- Changed from Pending Invoices -->
                     <div class="value"><%= pendingInvoices %></div>
                 </div>
                 <div class="stat-icon">
@@ -482,7 +482,8 @@
                 <div class="quick-actions-grid">
                     <button type="submit" name="action" value="addDoctor" class="btn-quick-action">Add Doctor</button>
                     <button type="submit" name="action" value="addPatient" class="btn-quick-action">Add Patient</button>
-                    <button type="submit" name="action" value="schedule" class="btn-quick-action">Schedule Appointment</button>
+                    <!-- Changed from Schedule Appointment to Add Appointment -->
+                    <button type="submit" name="action" value="schedule" class="btn-quick-action">Add Appointment</button>
                     <button type="submit" name="action" value="viewBilling" class="btn-quick-action">View Billing</button>
                 </div>
             </form>
