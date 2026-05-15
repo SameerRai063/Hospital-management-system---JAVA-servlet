@@ -79,12 +79,83 @@ public class ReceptionistDAO implements ReceptionistInterface {
         return ps.executeUpdate() > 0;
     }
     @Override
-    public boolean updateReceptionist(Receptionist receptionist) throws Exception {
-        String sql = "UPDATE receptionist SET status=? WHERE user_id=?";
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.setString(1, receptionist.getStatus());
-        ps.setInt(2, receptionist.getUserId());
-        return ps.executeUpdate() > 0;
+    public boolean updateReceptionistProfile(Receptionist receptionist, String currentPassword, String newPassword) throws Exception {
+        if (receptionist.getUser() == null) {
+            System.err.println("User object is missing from Receptionist.");
+            return false;
+        }
+
+        String checkAuthQuery = "SELECT password FROM users WHERE id = ?";
+        // Added profile_image to the query
+        String updateUserQuery = "UPDATE users SET name = ?, email = ?, phone = ?, address = ?, password = ?, profile_image = ? WHERE id = ?";
+        String updateReceptionistQuery = "UPDATE receptionist SET status = ? WHERE user_id = ?";
+
+        boolean originalAutoCommit = con.getAutoCommit();
+
+        try {
+            // 1. Verify Current Password
+            try (PreparedStatement checkStmt = con.prepareStatement(checkAuthQuery)) {
+                checkStmt.setInt(1, receptionist.getUserId());
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next()) {
+                        String dbPassword = rs.getString("password");
+                        if (!dbPassword.equals(currentPassword)) {
+                            System.err.println("Update Failed: Current password does not match.");
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
+            // 2. Begin Transaction
+            con.setAutoCommit(false);
+
+            String passwordToSave = (newPassword != null && !newPassword.trim().isEmpty())
+                    ? newPassword
+                    : currentPassword;
+
+            // 3. Update 'users' table
+            try (PreparedStatement userStmt = con.prepareStatement(updateUserQuery)) {
+                userStmt.setString(1, receptionist.getUser().getName());
+                userStmt.setString(2, receptionist.getUser().getEmail());
+                userStmt.setString(3, receptionist.getUser().getPhone());
+                userStmt.setString(4, receptionist.getUser().getAddress());
+                userStmt.setString(5, passwordToSave);
+                userStmt.setString(6, receptionist.getUser().getProfileImage()); // Injecting the image filename
+                userStmt.setInt(7, receptionist.getUserId());
+
+                int userRowsAffected = userStmt.executeUpdate();
+                if (userRowsAffected == 0) {
+                    con.rollback();
+                    return false;
+                }
+            }
+
+            // 4. Update 'receptionist' table
+            try (PreparedStatement repStmt = con.prepareStatement(updateReceptionistQuery)) {
+                repStmt.setString(1, receptionist.getStatus());
+                repStmt.setInt(2, receptionist.getUserId());
+
+                int repRowsAffected = repStmt.executeUpdate();
+                if (repRowsAffected == 0) {
+                    con.rollback();
+                    return false;
+                }
+            }
+
+            // 5. Commit Transaction
+            con.commit();
+            return true;
+
+        } catch (Exception e) {
+            con.rollback();
+            e.printStackTrace();
+            throw e;
+        } finally {
+            con.setAutoCommit(originalAutoCommit);
+        }
     }
     @Override
     public int getTotalReceptionists() throws Exception {

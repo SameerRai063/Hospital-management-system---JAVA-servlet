@@ -3,11 +3,12 @@ package Appointment.Model;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-public class Appointment{
+public class Appointment {
 
     private int id;
     private int patientId;
     private int doctorId;
+    private String doctorName; // <-- Added field
     private String department;
     private Date appointmentDate;
     private String reason;
@@ -18,10 +19,11 @@ public class Appointment{
     // Constructor
     public Appointment() {}
 
-    public Appointment(int patientId, int doctorId, String department,
+    public Appointment(int patientId, int doctorId, String doctorName, String department,
                        Date appointmentDate, String reason, String status) {
         this.patientId = patientId;
         this.doctorId = doctorId;
+        this.doctorName = doctorName; // <-- Added to constructor
         this.department = department;
         this.appointmentDate = appointmentDate;
         this.reason = reason;
@@ -38,6 +40,10 @@ public class Appointment{
 
     public int getDoctorId() { return doctorId; }
     public void setDoctorId(int doctorId) { this.doctorId = doctorId; }
+
+    // <-- Added Getter and Setter for doctorName -->
+    public String getDoctorName() { return doctorName; }
+    public void setDoctorName(String doctorName) { this.doctorName = doctorName; }
 
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
