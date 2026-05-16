@@ -50,13 +50,13 @@ public class ReceptionistDashboardServlet extends HttpServlet {
             request.setAttribute("totalRevenue",       totalRevenue);
 
             // Forward to dashboard JSP
-            RequestDispatcher rd = request.getRequestDispatcher("/admin/dashboard.jsp");
+            RequestDispatcher rd = request.getRequestDispatcher("/receptionists/dashboard.jsp");
             rd.forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("errorMessage", e.getMessage());
-            request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+            request.getRequestDispatcher("/receptionists/dashboard.jsp").forward(request, response);
 
         } finally {
             try {

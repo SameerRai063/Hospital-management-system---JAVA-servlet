@@ -12,42 +12,88 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.List;
 
-@WebServlet("/feedback")
+/**
+ * Handles GET /reviews  → loads and forwards to admin/reviews.jsp
+ * Handles GET /deleteReview → deletes one review then redirects back
+ */
+@WebServlet({"/reviews", "/deleteReview"})
 public class FeedbackServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ── 1. Auth guard ──────────────────────────────────────────────────
+        // ── Auth guard ────────────────────────────────────────────────────
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("loggedInUser") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
+        String path = request.getServletPath();
+
+        if ("/deleteReview".equals(path)) {
+            handleDelete(request, response);
+        } else {
+            handleList(request, response);
+        }
+    }
+
+    // ── List all reviews ──────────────────────────────────────────────────
+
+    private void handleList(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         Connection con = null;
         try {
             con = DBConnection.getConnection();
-            FeedbackDAO feedbackDAO = new FeedbackDAO(con);
+            FeedbackDAO dao = new FeedbackDAO(con);
 
-            // ── 2. Total feedback count ────────────────────────────────────
-            int totalFeedback = feedbackDAO.countTotalFeedback();
-            request.setAttribute("totalFeedback", totalFeedback);
+            // Attribute names must match what reviews.jsp reads via EL / scriptlet
+            int totalReviews      = dao.countTotalFeedback();
+            double averageRating  = dao.getAverageRating();
+            List<Feedback> list   = dao.getAllFeedback();
 
-            // ── 3. All feedback list ───────────────────────────────────────
-            List<Feedback> feedbackList = feedbackDAO.getAllFeedback();
-            request.setAttribute("feedbackList", feedbackList);
+            request.setAttribute("totalReviews",   totalReviews);   // JSP: <%= totalReviews %>
+            request.setAttribute("averageRating",  averageRating);  // JSP: <%= averageRating %>
+            request.setAttribute("reviewList",     list);           // JSP: ${reviewList}
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Failed to load feedback data.");
+            request.setAttribute("error", "Failed to load review data.");
         } finally {
-            try { if (con != null) con.close(); } catch (Exception ignored) {}
+            closeQuietly(con);
         }
 
-        // ── 4. Forward to feedback JSP ─────────────────────────────────────
-        request.getRequestDispatcher("/admin/feedback.jsp")
+        request.getRequestDispatcher("/admin/reviews.jsp")
                 .forward(request, response);
+    }
+
+    // ── Delete one review then redirect ───────────────────────────────────
+
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String idParam = request.getParameter("id");
+        if (idParam != null && !idParam.isBlank()) {
+            Connection con = null;
+            try {
+                con = DBConnection.getConnection();
+                new FeedbackDAO(con).deleteFeedback(Integer.parseInt(idParam.trim()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                closeQuietly(con);
+            }
+        }
+
+        // PRG pattern – redirect back to the list so F5 doesn't re-delete
+        response.sendRedirect(request.getContextPath() + "/reviews");
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    private void closeQuietly(Connection con) {
+        try { if (con != null) con.close(); } catch (Exception ignored) {}
     }
 }

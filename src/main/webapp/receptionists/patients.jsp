@@ -328,22 +328,23 @@
         </div>
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="<%= request.getContextPath() %>/Admin-dashboard" class="nav-link">
+                <a href="<%= request.getContextPath() %>/Receptionist-dashboard" class="nav-link">
                     <i class="fa-solid fa-border-all"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a href="<%= request.getContextPath() %>/doctors" class="nav-link">
+                <a href="<%= request.getContextPath() %>/receptionists/doctors" class="nav-link">
                     <i class="fa-solid fa-stethoscope"></i> Doctors
                 </a>
             </li>
+
             <li class="nav-item active">
-                <a href="<%= request.getContextPath() %>/patients" class="nav-link">
+                <a href="<%= request.getContextPath() %>/receptionists/patients" class="nav-link">
                     <i class="fa-solid fa-users"></i> Patients
                 </a>
             </li>
             <li class="nav-item">
-                <a href="<%= request.getContextPath() %>/appointments" class="nav-link">
+                <a href="<%= request.getContextPath() %>/receptionists/appointments" class="nav-link">
                     <i class="fa-regular fa-calendar"></i> Appointments
                 </a>
             </li>

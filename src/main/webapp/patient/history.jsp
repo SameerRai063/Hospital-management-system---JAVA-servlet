@@ -289,7 +289,7 @@
         <p class="text-[10px] uppercase tracking-widest text-white/60 font-bold">Patient Portal</p>
     </div>
     <nav class="flex-1 flex flex-col gap-1">
-        <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 flex items-center gap-3 hover:bg-white/10 rounded-full" href="dashboard.jsp">
+        <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 flex items-center gap-3 hover:bg-white/10 rounded-full" href="patient/dashboard.jsp">
             <span class="material-symbols-outlined">dashboard</span>
             <span class="text-sm font-medium">Dashboard</span>
         </a>

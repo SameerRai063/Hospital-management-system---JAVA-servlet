@@ -62,7 +62,7 @@ public class LoginUserServlet extends HttpServlet {
                         response.sendRedirect(ctx + "/doctorDashboard");
 
                     } else if ("receptionist".equalsIgnoreCase(role)) {
-                        response.sendRedirect(ctx + "/Admin-dashboard");
+                        response.sendRedirect(ctx + "/Receptionist-dashboard");
 
                     } else {
                         response.sendRedirect(ctx + "/login.jsp");

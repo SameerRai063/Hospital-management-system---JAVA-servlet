@@ -134,10 +134,10 @@
             <p>Clinical Oversight</p>
         </div>
         <ul class="nav-menu">
-            <li class="nav-item active"><a href="<%= request.getContextPath() %>/Admin-dashboard" class="nav-link"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
-            <li class="nav-item"><a href="<%= request.getContextPath() %>/doctors" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Doctors</a></li>
-            <li class="nav-item"><a href="<%= request.getContextPath() %>/patients" class="nav-link"><i class="fa-solid fa-users"></i> Patients</a></li>
-            <li class="nav-item"><a href="<%= request.getContextPath() %>/appointments" class="nav-link"><i class="fa-regular fa-calendar"></i> Appointments</a></li>
+            <li class="nav-item active"><a href="<%= request.getContextPath() %>/Receptionist-dashboard" class="nav-link"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="<%= request.getContextPath() %>/receptionists/doctors" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Doctors</a></li>
+            <li class="nav-item"><a href="<%= request.getContextPath() %>/receptionists/patients" class="nav-link"><i class="fa-solid fa-users"></i> Patients</a></li>
+            <li class="nav-item"><a href="<%= request.getContextPath() %>/receptionists/appointments" class="nav-link"><i class="fa-regular fa-calendar"></i> Appointments</a></li>
 
         </ul>
     </div>
@@ -181,7 +181,7 @@
             <p>Clinical Oversight Dashboard</p>
         </div>
 
-        <div class="stats-grid">
+        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
             <div class="stat-card">
                 <div class="stat-info"><h3>Total Doctors</h3><div class="value"><%= totalDoctors %></div></div>
                 <div class="stat-icon"><i class="fa-solid fa-stethoscope"></i></div>
@@ -194,19 +194,13 @@
                 <div class="stat-info"><h3>Total Receptionists</h3><div class="value"><%= totalReceptionists %></div></div>
                 <div class="stat-icon"><i class="fa-solid fa-user-nurse"></i></div>
             </div>
-            <div class="stat-card">
-                <div class="stat-info"><h3>Total Revenue</h3><div class="value">NPR <%= String.format("%,.2f", totalRevenue) %></div></div>
-                <div class="stat-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            </div>
         </div>
 
         <div class="card">
             <h3 class="card-title">Quick Actions</h3>
-            <div class="quick-actions-grid">
-                <button onclick="openModal('doctorModal')" class="btn-quick-action">Add Doctor</button>
-                <button onclick="openModal('patientModal')" class="btn-quick-action">Add Patient</button>
-                <button onclick="openModal('receptionistModal')" class="btn-quick-action">Add Receptionist</button>
-                <a href="<%= request.getContextPath() %>/billing" class="btn-quick-action">View Billing</a>
+            <div class="quick-actions-grid" style="display: flex; gap: 16px;">
+                <button onclick="openModal('doctorModal')"  class="btn-quick-action" style="flex: 1;">Add Doctor</button>
+                <button onclick="openModal('patientModal')" class="btn-quick-action" style="flex: 1;">Add Patient</button>
             </div>
         </div>
 
@@ -221,7 +215,7 @@
         <i class="fa-solid fa-xmark close-btn" onclick="closeModal('doctorModal')"></i>
         <h3>Add New Doctor</h3>
 
-        <form action="<%= request.getContextPath() %>/add-doctor" method="POST" enctype="multipart/form-data">
+        <form action="<%= request.getContextPath() %>/receptionists/add-doctor" method="POST" enctype="multipart/form-data">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
 
                 <div class="form-group">
@@ -311,7 +305,7 @@
         <i class="fa-solid fa-xmark close-btn" onclick="closeModal('patientModal')"></i>
         <h3>Add New Patient</h3>
 
-        <form action="<%= request.getContextPath() %>/add-patient" method="POST" enctype="multipart/form-data">
+        <form action="<%= request.getContextPath() %>/receptionists/add-patient" method="POST" enctype="multipart/form-data">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
 
                 <div class="form-group">
@@ -375,75 +369,7 @@
     </div>
 </div>
 
-<div id="receptionistModal" class="modal-overlay">
-    <div class="modal-content" style="width: 650px;">
-        <i class="fa-solid fa-xmark close-btn" onclick="closeModal('receptionistModal')"></i>
-        <h3>Add New Receptionist</h3>
 
-        <form action="<%= request.getContextPath() %>/add-receptionist" method="POST" enctype="multipart/form-data">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" name="name" required placeholder="Jane Smith">
-                </div>
-
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" required placeholder="frontdesk@curecloud.com">
-                </div>
-
-                <div class="form-group">
-                    <label>Temporary Password</label>
-                    <input type="password" name="password" required placeholder="Initial Password">
-                </div>
-
-                <div class="form-group">
-                    <label>Contact Number</label>
-                    <input type="text" name="phone" required placeholder="+977-XXXXXXXXXX">
-                </div>
-
-                <div class="form-group">
-                    <label>Gender</label>
-                    <select name="gender" required>
-                        <option value="" disabled selected>Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Date of Birth</label>
-                    <input type="date" name="dob" required>
-                </div>
-
-                <div class="form-group" style="grid-column: span 2;">
-                    <label>Home Address</label>
-                    <input type="text" name="address" required placeholder="Full Address">
-                </div>
-
-                <div class="form-group">
-                    <label>Account Status</label>
-                    <select name="status" required>
-                        <option value="Active" selected>Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Profile Image (Optional)</label>
-                    <input type="file" name="profileImage" accept="image/*">
-                </div>
-
-            </div>
-
-            <button type="submit" class="btn-submit" style="margin-top: 15px;">
-                <i class="fa-solid fa-user-plus"></i> Register Receptionist
-            </button>
-        </form>
-    </div>
-</div>
 
 <script>
     // Open a specific modal

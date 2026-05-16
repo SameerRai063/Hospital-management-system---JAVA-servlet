@@ -37,23 +37,14 @@
         }
     </script>
     <style type="text/tailwindcss">
-        :root {
-            --sidebar-width: 260px;
-        }
-        body {
-            background-color: #F7FAFA;
-        }
+        :root { --sidebar-width: 260px; }
+        body { background-color: #F7FAFA; }
     </style>
     <style>
-        body {
-            min-height: max(884px, 100dvh);
-        }
+        body { min-height: max(884px, 100dvh); }
     </style>
 </head>
 <body class="font-display text-slate-900 antialiased">
-
-<%-- Example: String patientName = (String) session.getAttribute("patientName"); --%>
-<%-- String patientId = (String) session.getAttribute("patientId"); --%>
 
 <div class="flex h-screen w-full">
 
@@ -64,46 +55,38 @@
             <p class="text-[10px] uppercase tracking-widest text-white/60 font-bold">Patient Portal</p>
         </div>
         <nav class="flex-1 flex flex-col gap-1">
-            <%-- Dashboard - ACTIVE --%>
             <a class="bg-white text-[#0052FF] rounded-full mx-4 px-4 py-3 font-semibold transition-all duration-200 flex items-center gap-3 shadow-lg shadow-black/10"
                href="dashboard.jsp">
                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
                 <span class="text-sm font-medium">Dashboard</span>
             </a>
-            <%-- Appointments --%>
-                <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
-                   href="${pageContext.request.contextPath}/patientAppointments">
+            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
+               href="${pageContext.request.contextPath}/patientAppointments">
                 <span class="material-symbols-outlined">history</span>
                 <span class="text-sm font-medium">Appointments</span>
             </a>
-
-            <%-- Settings --%>
-                <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
-                   href="${pageContext.request.contextPath}/patientProfile">
+            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
+               href="${pageContext.request.contextPath}/patientProfile">
                 <span class="material-symbols-outlined">settings</span>
                 <span class="text-sm font-medium">Settings</span>
             </a>
         </nav>
-
-        <%-- Profile Section --%>
-
     </aside>
 
     <%-- ===== MAIN CONTENT ===== --%>
     <main class="flex-1 flex flex-col overflow-y-auto">
-
-        <%-- Header --%>
-
-
         <div class="flex-1 px-10 pb-10">
 
-            <%-- ===== HEALTH SUMMARY CARDS ===== --%>
+            <%-- ===== QUICK ACTION CARDS ===== --%>
             <section class="mt-4 mb-8">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-bold text-slate-800">Quick Actions</h2>
                 </div>
                 <div class="grid grid-cols-3 gap-6">
-                    <div class="bg-brand-blue p-6 rounded-2xl shadow-lg shadow-brand-blue/10 flex flex-col justify-between h-44 text-white group cursor-pointer hover:-translate-y-1 transition-transform">
+
+                    <%-- Card 1: My Profile --%>
+                    <a href="${pageContext.request.contextPath}/patientProfile"
+                       class="bg-brand-blue p-6 rounded-2xl shadow-lg shadow-brand-blue/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform no-underline">
                         <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">person</span>
                         </div>
@@ -111,8 +94,11 @@
                             <p class="text-white/80 text-xs font-medium mb-1">View Details</p>
                             <p class="text-lg font-bold leading-tight">My Profile</p>
                         </div>
-                    </div>
-                    <div class="bg-mint p-6 rounded-2xl shadow-lg shadow-mint/10 flex flex-col justify-between h-44 text-white group cursor-pointer hover:-translate-y-1 transition-transform">
+                    </a>
+
+                    <%-- Card 2: My Appointments --%>
+                    <a href="${pageContext.request.contextPath}/patientAppointments"
+                       class="bg-mint p-6 rounded-2xl shadow-lg shadow-mint/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform no-underline">
                         <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">event</span>
                         </div>
@@ -120,29 +106,25 @@
                             <p class="text-white/80 text-xs font-medium mb-1">Schedule</p>
                             <p class="text-lg font-bold leading-tight">My Appointments</p>
                         </div>
-                    </div>
-                    <div class="bg-outstanding-orange p-6 rounded-2xl shadow-lg shadow-orange-500/10 flex flex-col justify-between h-44 text-white group cursor-pointer hover:-translate-y-1 transition-transform">
+                    </a>
+
+                    <%-- Card 3: Provide Feedback — opens modal --%>
+                    <div class="bg-outstanding-orange p-6 rounded-2xl shadow-lg shadow-orange-500/10 flex flex-col justify-between h-44 text-white cursor-pointer hover:-translate-y-1 transition-transform"
+                         onclick="document.getElementById('feedbackModal').classList.remove('hidden')">
                         <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
-                            <span class="material-symbols-outlined">support_agent</span>
+                            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">star</span>
                         </div>
-                        <%-- Feedback Trigger Card --%>
-                        <div class="bg-mint p-6 rounded-2xl shadow-lg shadow-mint/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform cursor-pointer"
-                             onclick="document.getElementById('feedbackModal').classList.remove('hidden')">
-                            <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
-                                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">star</span>
-                            </div>
-                            <div>
-                                <p class="text-white/80 text-xs font-medium mb-1">Rate us</p>
-                                <p class="text-lg font-bold leading-tight">Provide Feedback</p>
-                            </div>
+                        <div>
+                            <p class="text-white/80 text-xs font-medium mb-1">Rate us</p>
+                            <p class="text-lg font-bold leading-tight">Provide Feedback</p>
                         </div>
                     </div>
+
                 </div>
             </section>
 
+            <%-- ===== BOOK NEXT APPOINTMENT ===== --%>
             <div class="grid grid-cols-1 gap-8">
-
-                <%-- ===== BOOK NEXT APPOINTMENT ===== --%>
                 <section class="col-span-1">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-bold text-slate-800">Book Next Appointment</h2>
@@ -153,19 +135,20 @@
                         </div>
                         <h3 class="text-2xl font-bold text-slate-900 mb-2">Need to see a doctor?</h3>
                         <p class="text-slate-500 text-center max-w-md mb-8">Schedule your next visit easily. Choose your preferred doctor, date, and time that works best for you.</p>
-                        <a href="bookAppointment.jsp"
+                        <a href="${pageContext.request.contextPath}/patientAppointments"
                            class="bg-brand-blue text-white font-bold py-4 px-10 rounded-xl shadow-lg shadow-brand-blue/20 hover:bg-blue-700 transition-colors flex items-center gap-2">
                             <span class="material-symbols-outlined">add</span>
                             Book Appointment Now
                         </a>
                     </div>
                 </section>
-
             </div>
+
         </div>
     </main>
 </div>
-<%-- Feedback Modal — outside all containers --%>
+
+<%-- ===== FEEDBACK MODAL ===== --%>
 <div id="feedbackModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center">
 
     <%-- Backdrop --%>
@@ -251,7 +234,5 @@
     }
 </script>
 
-</body>
-</html>
 </body>
 </html>

@@ -3,12 +3,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
-    // Standard User Info
     String userName = (session.getAttribute("userName") != null) ? String.valueOf(session.getAttribute("userName")) : "Admin";
     String userRole = (session.getAttribute("userRole") != null) ? String.valueOf(session.getAttribute("userRole")) : "Super Admin";
     String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
-    // Safely cast numbers to prevent ClassCastExceptions preventing JSP compilation
     int totalReviews = 0;
     Object trObj = request.getAttribute("totalReviews");
     if (trObj instanceof Number) {
@@ -52,7 +50,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-light); color: var(--text-dark); display: flex; height: 100vh; overflow: hidden; }
 
-        /* ===== SIDEBAR ===== */
         .sidebar { width: 250px; background-color: var(--primary-blue); color: white; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
         .sidebar-top { padding: 24px 16px; }
         .brand h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
@@ -70,7 +67,6 @@
         .user-info h4 { font-size: 13px; font-weight: 600; }
         .user-info p  { font-size: 11px; color: var(--sidebar-text-muted); }
 
-        /* ===== LAYOUT ===== */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .topbar { height: 64px; background-color: white; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; flex-shrink: 0; }
         .topbar-left { display: flex; align-items: center; gap: 12px; }
@@ -82,7 +78,6 @@
         .top-search { display: flex; align-items: center; background-color: #f3f4f6; border-radius: 20px; padding: 8px 16px; width: 400px; }
         .top-search input { border: none; background: transparent; outline: none; width: 100%; font-size: 13px; color: var(--text-dark); }
 
-        /* ===== CONTENT & REVIEWS ===== */
         .content { padding: 32px; overflow-y: auto; flex: 1; background-color: #fdfdfd; }
         .page-header { margin-bottom: 24px; }
         .page-title h2 { font-size: 28px; font-weight: 700; color: #1a202c; margin-bottom: 4px; }
@@ -92,8 +87,8 @@
         .stat-card { flex: 1; background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
         .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .stat-icon.yellow { background: #fef3c7; color: #d97706; }
-        .stat-icon.green { background: #d1fae5; color: #059669; }
-        .stat-info p { font-size: 12px; font-weight: 700; color: var(--text-gray); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-icon.green  { background: #d1fae5; color: #059669; }
+        .stat-info p  { font-size: 12px; font-weight: 700; color: var(--text-gray); text-transform: uppercase; margin-bottom: 4px; }
         .stat-info h3 { font-size: 24px; font-weight: 900; color: var(--text-dark); }
 
         .table-container { background-color: white; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
@@ -106,7 +101,7 @@
         .review-text { max-width: 400px; color: var(--text-gray); line-height: 1.5; font-size: 13px; }
 
         .action-buttons { display: flex; gap: 8px; align-items: center; }
-        .btn-view { background: #0d7f6b; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; }
+        .btn-view   { background: #0d7f6b; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; }
         .btn-delete { background: #fee2e2; color: #991b1b; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: none; }
     </style>
 </head>
@@ -139,7 +134,6 @@
             </li>
         </ul>
     </div>
-
     <div class="sidebar-bottom">
         <div class="user-profile">
             <div class="avatar">${(not empty sessionScope.loggedInUser and not empty sessionScope.loggedInUser.name) ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
@@ -161,7 +155,7 @@
         <div class="topbar-center">
             <form action="searchReviews.jsp" method="GET" class="top-search">
                 <i class="fa-solid fa-magnifying-glass" style="color: #9ca3af; margin-right: 8px;"></i>
-                <input type="text" name="query" placeholder="Search reviews by patient, doctor, or keyword...">
+                <input type="text" name="query" placeholder="Search reviews by patient or keyword...">
             </form>
         </div>
     </header>
@@ -197,7 +191,7 @@
                 <tr>
                     <th>Date</th>
                     <th>Patient</th>
-                    <th>Regarding (Doctor/Dept)</th>
+                    <th>Patient ID</th>
                     <th>Rating</th>
                     <th>Feedback</th>
                     <th>Actions</th>
@@ -209,7 +203,7 @@
                         <tr>
                             <td>Oct 12, 2023</td>
                             <td><strong>Rahul Sharma</strong></td>
-                            <td>Dr. Aryan Kapoor</td>
+                            <td>101</td>
                             <td>
                                 <div class="stars">
                                     <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star inactive"></i>
@@ -224,13 +218,12 @@
                             </td>
                         </tr>
                     </c:when>
-
                     <c:otherwise>
                         <c:forEach var="review" items="${reviewList}">
                             <tr>
                                 <td>${review.date}</td>
                                 <td><strong>${review.patientName}</strong></td>
-                                <td>${review.doctorName}</td>
+                                <td>${review.patientId}</td>
                                 <td>
                                     <div class="stars">
                                         <c:forEach begin="1" end="5" var="i">

@@ -13,7 +13,7 @@ import Appointment.Model.dao.AppointmentDAO;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/receptionist/appointments")
+@WebServlet("/receptionists/appointments")
 public class AppointmentReceptionistServlet extends HttpServlet {
 
     private AppointmentDAO appointmentDAO;

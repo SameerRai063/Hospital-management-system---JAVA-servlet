@@ -1,6 +1,7 @@
 package Feedback.Model;
 
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 
 public class Feedback {
 
@@ -10,10 +11,11 @@ public class Feedback {
     private int rating;
     private Timestamp createdAt;
     private String patientName;
+
     // Constructors
     public Feedback() {}
 
-    public Feedback( int patientId, String comment, int rating) {
+    public Feedback(int patientId, String comment, int rating) {
         this.patientId = patientId;
         this.comment = comment;
         this.rating = rating;
@@ -38,4 +40,11 @@ public class Feedback {
 
     public String getPatientName() { return patientName; }
     public void setPatientName(String patientName) { this.patientName = patientName; }
+
+    /** Used by JSP via ${review.date} — formats as "Oct 12, 2023" */
+    public String getDate() {
+        if (createdAt == null) return "";
+        return createdAt.toLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
+    }
 }
