@@ -76,12 +76,7 @@
                 <span class="material-symbols-outlined">history</span>
                 <span class="text-sm font-medium">Appointments</span>
             </a>
-            <%-- Messages --%>
-            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
-               href="messages.jsp">
-                <span class="material-symbols-outlined">chat</span>
-                <span class="text-sm font-medium">Messages</span>
-            </a>
+
             <%-- Settings --%>
                 <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
                    href="${pageContext.request.contextPath}/patientProfile">

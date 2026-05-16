@@ -117,6 +117,11 @@
       <li class="nav-item">
         <a href="billing.jsp" class="nav-link">
           <i class="fa-solid fa-file-invoice-dollar"></i> Billing</a></li>
+      <li class="nav-item">
+        <a href="<%= request.getContextPath() %>/reviews" class="nav-link">
+          <i class="fa-solid fa-star"></i> Reviews
+        </a>
+      </li>
     </ul>
   </div>
   <div class="user-profile">
