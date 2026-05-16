@@ -138,12 +138,6 @@
         <div class="font-bold text-[#2F4156] dark:text-white tracking-tight text-3xl">
             ${hospitalName}
         </div>
-        <div class="hidden md:flex gap-8 items-center text-lg">
-            <a class="text-[#567C8D] dark:text-[#C8D9E6] hover:bg-slate-50 dark:hover:bg-slate-800/50 px-2 py-1 rounded transition-all" href="#">Home</a>
-            <a class="text-[#2F4156] dark:text-slate-400 hover:text-[#567C8D] hover:bg-slate-50 dark:hover:bg-slate-800/50 px-2 py-1 rounded transition-all" href="#">About</a>
-            <a class="text-[#2F4156] dark:text-slate-400 hover:text-[#567C8D] hover:bg-slate-50 dark:hover:bg-slate-800/50 px-2 py-1 rounded transition-all" href="#">Services</a>
-            <a class="text-[#2F4156] dark:text-slate-400 hover:text-[#567C8D] hover:bg-slate-50 dark:hover:bg-slate-800/50 px-2 py-1 rounded transition-all" href="#">Contact</a>
-        </div>
         <div class="flex gap-3">
             <a href="login.jsp" class="inline-block text-center bg-white text-[#2F4156] border-2 border-[#2F4156] font-semibold px-7 py-3 rounded-full hover:bg-[#e8edf2] active:bg-[#d0d9e3] transition-colors shadow-sm text-lg">
                 Login
