@@ -175,7 +175,7 @@
           <th>PATIENT</th>
           <th>DOCTOR</th>
           <th>DEPARTMENT</th>
-          <th>DATE & TIME</th>
+          <th>DATE</th>
           <th>STATUS</th>
           <th>ACTIONS</th>
         </tr>

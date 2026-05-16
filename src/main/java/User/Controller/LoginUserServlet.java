@@ -48,7 +48,7 @@ public class LoginUserServlet extends HttpServlet {
                     session.setAttribute("loggedInUser", user);
                     session.setAttribute("userName", user.getName());
                     session.setAttribute("userRole", user.getRole());
-
+                    session.setAttribute("userId", user.getId());
                     String role = user.getRole();
 
                     if ("patient".equalsIgnoreCase(role)) {
@@ -58,7 +58,8 @@ public class LoginUserServlet extends HttpServlet {
                         response.sendRedirect(ctx + "/Admin-dashboard");
 
                     } else if ("doctor".equalsIgnoreCase(role)) {
-                        response.sendRedirect(ctx + "/Admin-dashboard");
+                        session.setAttribute("doctorId", user.getId());
+                        response.sendRedirect(ctx + "/doctorDashboard");
 
                     } else if ("receptionist".equalsIgnoreCase(role)) {
                         response.sendRedirect(ctx + "/Admin-dashboard");

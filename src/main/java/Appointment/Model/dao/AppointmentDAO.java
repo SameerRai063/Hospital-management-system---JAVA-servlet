@@ -218,10 +218,114 @@ public class AppointmentDAO implements AppointmentInterface {
 
         return list;
     }
+    public List<Appointment> getAppointmentsByDoctorId(int doctorId) {
+        List<Appointment> appointments = new ArrayList<>();
+        String sql = """
+                SELECT a.id,
+                       a.patient_id,
+                       u.name   AS patient_name,
+                       a.reason,
+                       a.appointment_date,
+                       a.appointment_time,
+                       a.status
+                FROM   appointments a
+                JOIN   users u ON u.id = a.patient_id
+                WHERE  a.doctor_id = ?
+                ORDER  BY a.appointment_date DESC, a.appointment_time DESC
+                """;
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, doctorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Appointment appt = new Appointment();
+                    appt.setId(rs.getInt("id"));
+                    appt.setPatientId(rs.getInt("patient_id"));
+                    appt.setPatientName(rs.getString("patient_name"));
+                    appt.setReason(rs.getString("reason"));
+                    appt.setAppointmentDate(rs.getDate("appointment_date"));
+                    appt.setAppointmentTime(rs.getTime("appointment_time"));
+                    appt.setStatus(rs.getString("status"));
+                    appointments.add(appt);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return appointments;
+    }
+    // ─── Shared count helper ──────────────────────────────────────────────────
+    private int runCount(String sql, int doctorId) {
+        int count = 0;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, doctorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) count = rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+    // ─── Count total appointments for a doctor ────────────────────────────────
+    public int countTotalAppointments(int doctorId) {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ?";
+        return runCount(sql, doctorId);
+    }
+    // ─── Count scheduled appointments for a doctor ────────────────────────────
+    public int countScheduledAppointments(int doctorId) {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND status = 'scheduled'";
+        return runCount(sql, doctorId);
+    }
+
+    // ─── Count completed appointments for a doctor ────────────────────────────
+    public int countCompletedAppointments(int doctorId) {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND status = 'completed'";
+        return runCount(sql, doctorId);
+    }
+    public boolean updateAppointmentStatus(int appointmentId, String newStatus) {
+        String sql = "UPDATE appointments SET status = ?, updated_at = NOW() WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, newStatus);
+            ps.setInt(2, appointmentId);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     // =========================
     // GET BY ID
     // =========================
+    public boolean updateStatus(int appointmentId, String status) {
+
+        String sql = "UPDATE appointments SET status = ?, updated_at = NOW() WHERE id = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, status);
+            ps.setInt(2, appointmentId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     @Override
     public Appointment getAppointmentById(int appointmentId) {
 
