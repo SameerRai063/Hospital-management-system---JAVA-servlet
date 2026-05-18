@@ -64,20 +64,13 @@
 
         <!-- Profile — populated from session via servlet -->
         <div class="mt-auto p-8 border-t border-white/10">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-white/20 ring-2 ring-white/30 flex items-center justify-center text-white font-bold text-base flex-shrink-0">
-                    ${doctorInitials}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-white truncate">${doctorName}</p>
-                    <p class="text-xs text-white/60 truncate font-medium uppercase tracking-wider">${doctorSpecialty}</p>
-                </div>
-                <form method="post" action="<%= request.getContextPath() %>/logout" style="margin:0">
-                    <button type="submit" class="text-white/60 hover:text-white transition-colors">
-                        <span class="material-symbols-outlined text-[20px]">logout</span>
-                    </button>
-                </form>
-            </div>
+            <form method="post" action="<%= request.getContextPath() %>/login.jsp" style="margin:0">
+                <button type="submit"
+                        class="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-4 py-3 rounded-xl transition-all">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Logout
+                </button>
+            </form>
         </div>
     </aside>
 

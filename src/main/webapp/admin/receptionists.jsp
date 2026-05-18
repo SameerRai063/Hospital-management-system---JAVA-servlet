@@ -172,10 +172,7 @@
       <span class="divider">|</span>
       <span class="date"><%= currentDate %></span>
     </div>
-    <div class="topbar-right">
-      <i class="fa-regular fa-bell top-icon"></i>
-      <i class="fa-regular fa-circle-question top-icon"></i>
-    </div>
+
   </header>
 
   <main class="content">

@@ -383,22 +383,12 @@
 
 <!-- ===== MAIN ===== -->
 <div class="main-wrapper">
+    <!-- AFTER -->
     <header class="topbar">
         <div class="topbar-left">
             <span class="title">Patients</span>
             <span class="divider">|</span>
             <span class="date"><%= currentDate %></span>
-        </div>
-        <div class="topbar-center">
-            <form action="searchPatients.jsp" method="GET" class="top-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" name="query" placeholder="Search patients, records, or doctors...">
-            </form>
-        </div>
-        <div class="topbar-right">
-            <i class="fa-regular fa-bell top-icon"></i>
-            <i class="fa-regular fa-circle-question top-icon"></i>
-            <button class="btn-support">Support</button>
         </div>
     </header>
 

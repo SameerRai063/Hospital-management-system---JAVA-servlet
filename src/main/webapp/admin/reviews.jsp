@@ -152,12 +152,7 @@
             <span class="divider">|</span>
             <span class="date"><%= currentDate %></span>
         </div>
-        <div class="topbar-center">
-            <form action="searchReviews.jsp" method="GET" class="top-search">
-                <i class="fa-solid fa-magnifying-glass" style="color: #9ca3af; margin-right: 8px;"></i>
-                <input type="text" name="query" placeholder="Search reviews by patient or keyword...">
-            </form>
-        </div>
+
     </header>
 
     <main class="content">

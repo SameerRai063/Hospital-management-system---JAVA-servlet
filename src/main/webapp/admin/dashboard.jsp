@@ -183,7 +183,7 @@
         <% } %>
 
         <div class="page-header">
-            <h2>Welcome, <%= userName %>!</h2>
+            <h2>Welcome back Admin</h2>
             <p>Clinical Oversight Dashboard</p>
         </div>
 
@@ -298,10 +298,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Profile Photo</label>
-                    <input type="file" name="profileImage" accept="image/*">
-                </div>
+
 
             </div>
 
@@ -370,10 +367,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Profile Image (Optional)</label>
-                    <input type="file" name="profileImage" accept="image/*">
-                </div>
+
 
             </div>
             <button type="submit" class="btn-submit" style="margin-top: 15px;">Add Patient</button>
@@ -437,10 +431,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Profile Image (Optional)</label>
-                    <input type="file" name="profileImage" accept="image/*">
-                </div>
+
 
             </div>
 

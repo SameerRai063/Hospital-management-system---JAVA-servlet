@@ -105,18 +105,12 @@
 </aside>
 
 <div class="main-wrapper">
+  <!-- AFTER -->
   <header class="topbar">
     <div class="topbar-left">
       Billing <span style="color:#d1d5db;">|</span>
-      <span class="date">${not empty currentDate ? currentDate : 'May 1, 2026'}</span>
+      <span class="date" id="liveClock"></span>
     </div>
-
-    <form action="globalSearch.jsp" method="GET" class="top-search">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" name="query" placeholder="Search patients, records, or doctors...">
-    </form>
-
-    <div class="topbar-right"><button class="btn-support">Support</button></div>
   </header>
 
   <main class="content">
@@ -200,5 +194,15 @@
     </div>
   </main>
 </div>
+<script>
+  function updateClock() {
+    const now = new Date();
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    document.getElementById('liveClock').textContent =
+            now.toLocaleDateString('en-US', options);
+  }
+  updateClock();
+  setInterval(updateClock, 60000); // updates every minute
+</script>
 </body>
 </html>
