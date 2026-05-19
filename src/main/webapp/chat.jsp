@@ -155,6 +155,8 @@
 </div>
 
 <script>
+    // Base context path for building absolute URLs from the client
+    const BASE = '${pageContext.request.contextPath}';
     const senderId = document.getElementById('senderId').value;
     const receiverId = document.getElementById('receiverId').value;
     const chatBox = document.getElementById('chatBox');
@@ -167,11 +169,13 @@
             return;
         }
 
-        fetch('${pageContext.request.contextPath}/chat?fragment=messages&senderId=' + encodeURIComponent(senderId) + '&receiverId=' + encodeURIComponent(receiverId) + '&_=' + Date.now(), {
+        // Use absolute URL built from server-provided context path to avoid wrong relative resolutions
+        fetch(BASE + '/chat?fragment=messages&senderId=' + encodeURIComponent(senderId) + '&receiverId=' + encodeURIComponent(receiverId) + '&_=' + Date.now(), {
             cache: 'no-store'
         })
             .then(response => {
                 if (!response.ok) {
+                    console.error('Failed to load messages', response.status, response.url);
                     throw new Error('Unable to load messages');
                 }
                 return response.text();
@@ -193,7 +197,8 @@
             return;
         }
 
-        fetch('${pageContext.request.contextPath}/sendMessage', {
+        // POST to absolute sendMessage so it resolves correctly regardless of current path
+        fetch(BASE + '/sendMessage', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'senderId=' + encodeURIComponent(senderId)
@@ -211,11 +216,13 @@
 
     // Periodically refresh contacts list (to update unread badges and ordering)
     function loadContactsList() {
-        fetch('${pageContext.request.contextPath}/chat?fragment=contacts&receiverId=' + encodeURIComponent(receiverId) + '&_=' + Date.now(), {
+        // Use absolute URL built from server-provided context path
+        fetch(BASE + '/chat?fragment=contacts&receiverId=' + encodeURIComponent(receiverId) + '&_=' + Date.now(), {
             cache: 'no-store'
         })
             .then(response => {
                 if (!response.ok) {
+                    console.error('Failed to load contacts', response.status, response.url);
                     throw new Error('Unable to load contacts');
                 }
                 return response.text();

@@ -251,6 +251,7 @@ public class ChatServlet extends HttpServlet {
                 : contact.getUnreadCount() > 0 ? "bg-blue-200 text-[#0052FF]" : "bg-slate-200 text-slate-700";
 
         sb.append("<div class=\"mb-3\">");
+        // Build href using the application's context path so the link always points to the correct servlet
         String contactHref = request.getContextPath() + "/chat?receiverId=" + contact.getId();
         sb.append("<a class=\"" + itemClass + "\" href=\"" + contactHref + "\">");
         sb.append("<span class=\"flex size-9 items-center justify-center rounded-full ")
