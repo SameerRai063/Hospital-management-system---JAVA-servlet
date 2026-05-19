@@ -23,14 +23,15 @@ public class viewDoctorsReceptionistServlet extends HttpServlet {
             con = DBConnection.getConnection();
             DoctorDAO doctorDAO = new DoctorDAO(con);
 
-            // 1. Get doctor list
-            List<Doctor> doctorsList = doctorDAO.getAllDoctors();
+            String search = request.getParameter("search");
+            List<Doctor> doctorsList = doctorDAO.searchDoctors(search);
 
             // 2. Get stats
             Map<String, Integer> stats = doctorDAO.getDoctorStats();
 
             // 3. Set attributes for JSP
             request.setAttribute("doctorsList",  doctorsList);
+            request.setAttribute("search", search);
             request.setAttribute("totalDoctors", stats.get("total"));
             request.setAttribute("activeToday",  stats.get("active"));
             request.setAttribute("onLeave",      stats.get("onLeave"));

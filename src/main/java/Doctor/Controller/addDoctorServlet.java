@@ -7,13 +7,13 @@ import jakarta.servlet.annotation.MultipartConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.Date;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-import utils.DBConnection;
 import User.Model.User;
 import Doctor.Model.Doctor;
-import Doctor.Model.dao.DoctorDAO;
+import utils.UserService;
 
 @WebServlet("/add-doctor")
 @MultipartConfig(
@@ -27,7 +27,6 @@ public class addDoctorServlet extends HttpServlet { // Changed to Uppercase
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Connection con = null;
         try {
             // 1. Handle Image
             String fileName = "default_doctor.png";
@@ -37,18 +36,27 @@ public class addDoctorServlet extends HttpServlet { // Changed to Uppercase
                 String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIR;
 
                 File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) uploadDir.mkdirs();
+                if (!uploadDir.exists() && !uploadDir.mkdirs()) {
+                    throw new IOException("Unable to create doctor upload directory.");
+                }
                 filePart.write(uploadPath + File.separator + fileName);
             }
 
             // 2. Build User
             User user = new User();
-            user.setName(request.getParameter("name"));
-            user.setEmail(request.getParameter("email"));
-            user.setPassword(request.getParameter("password"));
-            user.setPhone(request.getParameter("phone"));
-            user.setGender(request.getParameter("gender"));
-            user.setAddress(request.getParameter("address"));
+            String name = request.getParameter("name") != null ? request.getParameter("name").trim() : null;
+            String email = request.getParameter("email") != null ? request.getParameter("email").trim() : null;
+            String password = request.getParameter("password") != null ? request.getParameter("password").trim() : null;
+            String phone = request.getParameter("phone") != null ? request.getParameter("phone").trim() : null;
+            String gender = request.getParameter("gender") != null ? request.getParameter("gender").trim() : null;
+            String address = request.getParameter("address") != null ? request.getParameter("address").trim() : null;
+
+            user.setName(name);
+            user.setEmail(email);
+            user.setPassword(password);
+            user.setPhone(phone);
+            user.setGender(gender);
+            user.setAddress(address);
             user.setProfileImage(fileName);
             user.setRole("doctor");
 
@@ -67,23 +75,22 @@ public class addDoctorServlet extends HttpServlet { // Changed to Uppercase
             String expStr = request.getParameter("experienceYears");
             doctor.setExperienceYears(expStr != null ? Integer.parseInt(expStr) : 0);
 
-            // 4. DB Operations
-            con = DBConnection.getConnection();
-            DoctorDAO doctorDAO = new DoctorDAO(con);
+            // 4. DB operations via Hibernate
+            UserService userService = new UserService();
+            int userId = userService.createDoctor(user, doctor);
 
-            boolean success = doctorDAO.addDoctor(doctor);
-
-            if (success) {
-                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?success=1");
+            if (userId > 0) {
+                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?success=doctor_added");
             } else {
-                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=failed");
+                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=doctor_failed");
             }
 
+        } catch (IllegalArgumentException e) {
+            String message = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=validation&message=" + message);
         } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=exception");
-        } finally {
-            try { if (con != null) con.close(); } catch (Exception ignore) {}
+            String message = URLEncoder.encode(e.getMessage() != null ? e.getMessage() : "Unable to save doctor.", StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=exception&message=" + message);
         }
     }
 }

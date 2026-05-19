@@ -4,7 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     String userName    = (session.getAttribute("userName") != null) ? (String) session.getAttribute("userName") : "Admin";
-    String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "Super Admin";
+    String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "";
     String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
     int    totalDoctors       = (request.getAttribute("totalDoctors")       != null) ? (Integer) request.getAttribute("totalDoctors")       : 0;
@@ -118,6 +118,8 @@
         .top-search input::placeholder { color: #9ca3af; }
         .topbar-right { display: flex; align-items: center; gap: 20px; }
         .top-icon { font-size: 18px; color: var(--text-gray); cursor: pointer; }
+        .top-icon-link { position: relative; color: var(--text-gray); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+        .notification-dot { position: absolute; top: -3px; right: -4px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
         .btn-support {
             background-color: #f0fdf4; color: var(--primary-teal);
             border: 1px solid #bbf7d0; border-radius: 20px;
@@ -348,6 +350,11 @@
                     <i class="fa-regular fa-calendar"></i> Appointments
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="<%= request.getContextPath() %>/chat" class="nav-link">
+                    <i class="fa-regular fa-comments"></i> Chat
+                </a>
+            </li>
         </ul>
     </div>
     <div class="sidebar-bottom">
@@ -360,8 +367,8 @@
         <div class="user-profile">
             <div class="avatar">${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
             <div class="user-info">
-                <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Samir'}</h4>
-                <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : 'Super Admin'}</p>
+                <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : ''}</h4>
+                <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : ''}</p>
             </div>
         </div>
     </div>
@@ -376,13 +383,16 @@
             <span class="date"><%= currentDate %></span>
         </div>
         <div class="topbar-center">
-            <form action="searchPatients.jsp" method="GET" class="top-search">
+            <form action="<%= request.getContextPath() %>/receptionists/patients" method="GET" class="top-search">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" name="query" placeholder="Search patients, records, or doctors...">
+                <input type="text" name="search" placeholder="Search patients by name, ID, email, phone, blood group..." value="${search}">
             </form>
         </div>
         <div class="topbar-right">
-            <i class="fa-regular fa-bell top-icon"></i>
+            <a href="<%= request.getContextPath() %>/notifications.jsp" class="top-icon-link" aria-label="Notifications">
+                <i class="fa-regular fa-bell top-icon"></i>
+                <span class="notification-dot"></span>
+            </a>
             <i class="fa-regular fa-circle-question top-icon"></i>
             <button class="btn-support">Support</button>
         </div>
@@ -427,7 +437,6 @@
                 <tr>
                     <th>PATIENT ID</th>
                     <th>NAME</th>
-                    <th>AGE</th>
                     <th>GENDER</th>
                     <th>PHONE</th>
                     <th>BLOOD GROUP</th>
@@ -438,20 +447,14 @@
                 <c:choose>
                     <c:when test="${empty patientList}">
                         <tr>
-                            <td colspan="7" class="empty-state">No patients found.</td>
+                            <td colspan="6" class="empty-state">No patients found.</td>
                         </tr>
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="patient" items="${patientList}">
-                            <%-- Compute age --%>
-                            <c:set var="age" value="--" />
-                            <c:if test="${not empty patient.user.dob}">
-                                <c:set var="age" value="${2026 - patient.user.dob.year - 1900}" />
-                            </c:if>
                             <tr>
                                 <td>${patient.user.id}</td>
                                 <td>${patient.user.name}</td>
-                                <td>${age}</td>
                                 <td>${patient.user.gender}</td>
                                 <td>${patient.user.phone}</td>
                                 <td>${patient.bloodGroup}</td>
@@ -463,7 +466,6 @@
                                                         id:           '${patient.user.id}',
                                                         name:         '${patient.user.name}',
                                                         gender:       '${patient.user.gender}',
-                                                        age:          '${age}',
                                                         dob:          '${patient.user.dob}',
                                                         phone:        '${patient.user.phone}',
                                                         email:        '${patient.user.email}',
@@ -479,6 +481,10 @@
                                            class="btn-delete"
                                            onclick="return confirm('Are you sure you want to delete this patient?')">
                                             <i class="fa-solid fa-trash"></i> Delete
+                                        </a>
+                                        <a href="<%= request.getContextPath() %>/chat?receiverId=${patient.user.id}"
+                                           class="btn-view">
+                                            <i class="fa-regular fa-comments"></i> Chat
                                         </a>
                                     </div>
                                 </td>

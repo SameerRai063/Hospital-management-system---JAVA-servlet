@@ -25,7 +25,7 @@ public class DoctorDAO implements DoctorInterface {
 
         // FIX: Changed INNER JOIN → LEFT JOIN so no doctor rows are silently dropped
         // FIX: Added WHERE u.role = 'doctor' to exclude non-doctor users
-        String sql = "SELECT u.id, u.name, u.gender, u.dob, u.address, u.phone, u.email, " +
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
                 "u.profile_image, u.role, u.created_at, u.updated_at, " +
                 "d.status, d.qualifications, d.department, d.experience_years " +
                 "FROM users u " +
@@ -54,9 +54,9 @@ public class DoctorDAO implements DoctorInterface {
                 // 2. Build the Doctor object
                 Doctor doctor = new Doctor();
                 doctor.setUserId(rs.getInt("id"));
-                doctor.setStatus(rs.getString("status"));
+                doctor.setStatus(defaultStatus(rs.getString("status")));
                 doctor.setQualifications(rs.getString("qualifications"));
-                doctor.setDepartment(rs.getString("department"));
+                doctor.setDepartment(defaultDepartment(rs.getString("department")));
                 doctor.setExperienceYears(rs.getInt("experience_years"));
 
                 // 3. Attach User to Doctor
@@ -64,6 +64,57 @@ public class DoctorDAO implements DoctorInterface {
 
                 // 4. Add to list
                 doctors.add(doctor);
+            }
+        }
+
+        return doctors;
+    }
+
+    public List<Doctor> searchDoctors(String searchTerm) throws Exception {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAllDoctors();
+        }
+
+        List<Doctor> doctors = new ArrayList<>();
+        String like = "%" + searchTerm.trim() + "%";
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
+                "u.profile_image, u.role, u.created_at, u.updated_at, " +
+                "d.status, d.qualifications, d.department, d.experience_years " +
+                "FROM users u " +
+                "LEFT JOIN doctor d ON u.id = d.user_id " +
+                "WHERE u.role = 'doctor' " +
+                "AND (u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ? OR d.department LIKE ? OR d.qualifications LIKE ? OR CAST(u.id AS CHAR) LIKE ?) " +
+                "ORDER BY u.name";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            for (int i = 1; i <= 6; i++) {
+                ps.setString(i, like);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt("id"));
+                    user.setName(rs.getString("name"));
+                    user.setGender(rs.getString("gender"));
+                    user.setDob(rs.getDate("dob"));
+                    user.setAddress(rs.getString("address"));
+                    user.setPhone(rs.getString("phone"));
+                    user.setEmail(rs.getString("email"));
+                    user.setProfileImage(rs.getString("profile_image"));
+                    user.setRole(rs.getString("role"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    user.setUpdatedAt(rs.getTimestamp("updated_at"));
+
+                    Doctor doctor = new Doctor();
+                    doctor.setUserId(rs.getInt("id"));
+                    doctor.setStatus(defaultStatus(rs.getString("status")));
+                    doctor.setQualifications(rs.getString("qualifications"));
+                    doctor.setDepartment(defaultDepartment(rs.getString("department")));
+                    doctor.setExperienceYears(rs.getInt("experience_years"));
+                    doctor.setUser(user);
+                    doctors.add(doctor);
+                }
             }
         }
 
@@ -83,7 +134,7 @@ public class DoctorDAO implements DoctorInterface {
     }
     @Override
     public int getTotalDoctors() throws Exception {
-        String sql = "SELECT COUNT(*) FROM doctor";
+        String sql = "SELECT COUNT(*) FROM users WHERE role = 'doctor'";
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             return rs.next() ? rs.getInt(1) : 0;
@@ -95,9 +146,10 @@ public class DoctorDAO implements DoctorInterface {
 
         String sql = "SELECT " +
                 "COUNT(*) AS total, " +
-                "SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS activeCount, " +
-                "SUM(CASE WHEN status = 'on leave' THEN 1 ELSE 0 END) AS onLeaveCount " +
-                "FROM doctor";
+                "SUM(CASE WHEN COALESCE(d.status, 'Active') = 'active' THEN 1 ELSE 0 END) AS activeCount, " +
+                "SUM(CASE WHEN COALESCE(d.status, 'Active') = 'on leave' THEN 1 ELSE 0 END) AS onLeaveCount " +
+                "FROM users u LEFT JOIN doctor d ON u.id = d.user_id " +
+                "WHERE u.role = 'doctor'";
 
         // FIX: try-with-resources ensures resources are always closed
         try (PreparedStatement ps = con.prepareStatement(sql);
@@ -119,69 +171,87 @@ public class DoctorDAO implements DoctorInterface {
 
         return stats;
     }
-    @Override
-    public boolean addDoctor(Doctor doctor) throws Exception {
-        User user = doctor.getUser();
-        if (user == null) return false;
+     @Override
+     public boolean addDoctor(Doctor doctor) throws Exception {
+         if (doctor == null || doctor.getUser() == null) {
+             throw new IllegalArgumentException("Doctor and User details are required.");
+         }
 
-        String userQuery = "INSERT INTO users (name, gender, dob, address, phone, email, password, role, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?, 'doctor', ?)";
-        String doctorQuery = "INSERT INTO doctor (user_id, status, qualifications, department, experience_years) VALUES (?, ?, ?, ?, ?)";
+         User user = doctor.getUser();
 
-        boolean originalAutoCommit = con.getAutoCommit();
+         // Validate required fields
+         if (user.getName() == null || user.getName().trim().isEmpty()) {
+             throw new IllegalArgumentException("Name is required.");
+         }
+         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+             throw new IllegalArgumentException("Email is required.");
+         }
+         if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+             throw new IllegalArgumentException("Password is required.");
+         }
 
-        try {
-            con.setAutoCommit(false); // Start Transaction
+         boolean originalAutoCommit = con.getAutoCommit();
+         try {
+             con.setAutoCommit(false); // start transaction
 
-            // 1. Insert into Users Table
-            int generatedUserId = -1;
-            try (PreparedStatement userStmt = con.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS)) {
-                userStmt.setString(1, user.getName());
-                userStmt.setString(2, user.getGender());
-                userStmt.setDate(3, user.getDob());
-                userStmt.setString(4, user.getAddress());
-                userStmt.setString(5, user.getPhone());
-                userStmt.setString(6, user.getEmail());
-                String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-                userStmt.setString(7, hashedPassword);
-                userStmt.setString(8, user.getProfileImage());
+              String safeName = user.getName().trim();
+              String safeEmail = user.getEmail().trim();
+              String hashedPassword = BCrypt.hashpw(user.getPassword().trim(), BCrypt.gensalt());
+              String profileImage = user.getProfileImage() != null && !user.getProfileImage().isEmpty() ? user.getProfileImage() : "default.png";
 
-                int affectedRows = userStmt.executeUpdate();
-                if (affectedRows == 0) throw new SQLException("Creating user failed, no rows affected.");
+              // Step 1: Insert user
+               String userSQL = "INSERT INTO users (name, gender, dob, address, phone, email, password, role, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+               try (PreparedStatement psUser = con.prepareStatement(userSQL, Statement.RETURN_GENERATED_KEYS)) {
+                   psUser.setString(1, safeName);
+                   psUser.setString(2, user.getGender());
+                   psUser.setDate(3, user.getDob());
+                   psUser.setString(4, user.getAddress());
+                   psUser.setString(5, user.getPhone());
+                   psUser.setString(6, safeEmail);
+                   psUser.setString(7, hashedPassword);
+                   psUser.setString(8, "doctor");
+                   psUser.setString(9, profileImage);
+                  psUser.executeUpdate();
 
-                try (ResultSet generatedKeys = userStmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        generatedUserId = generatedKeys.getInt(1);
-                    } else {
-                        throw new SQLException("Creating user failed, no ID obtained.");
-                    }
-                }
-            }
+                 // Get generated user ID
+                 try (ResultSet rs = psUser.getGeneratedKeys()) {
+                     if (!rs.next()) {
+                         con.rollback();
+                         return false;
+                     }
+                     int userId = rs.getInt(1);
 
-            // 2. Insert into Doctors Table
-            try (PreparedStatement doctorStmt = con.prepareStatement(doctorQuery)) {
-                doctorStmt.setInt(1, generatedUserId);
-                doctorStmt.setString(2, doctor.getStatus());
-                doctorStmt.setString(3, doctor.getQualifications());
-                doctorStmt.setString(4, doctor.getDepartment());
-                doctorStmt.setInt(5, doctor.getExperienceYears());
+                     // Step 2: Insert doctor details
+                     String doctorSQL = "INSERT INTO doctor (user_id, status, qualifications, department, experience_years) " +
+                             "VALUES (?, ?, ?, ?, ?)";
+                     try (PreparedStatement psDoctor = con.prepareStatement(doctorSQL)) {
+                         psDoctor.setInt(1, userId);
+                         psDoctor.setString(2, doctor.getStatus() != null && !doctor.getStatus().isEmpty() ? doctor.getStatus() : "Active");
+                         psDoctor.setString(3, doctor.getQualifications());
+                         psDoctor.setString(4, doctor.getDepartment());
+                         psDoctor.setInt(5, doctor.getExperienceYears());
+                         psDoctor.executeUpdate();
+                     }
+                 }
+             }
 
-                doctorStmt.executeUpdate();
-            }
+             con.commit();
+             return true;
 
-            con.commit(); // Success
-            return true;
-
-        } catch (Exception e) {
-            con.rollback(); // Undo everything if any part fails
-            e.printStackTrace();
-            throw e;
-        } finally {
-            con.setAutoCommit(originalAutoCommit);
-        }
-    }
+         } catch (Exception e) {
+             if (con != null) {
+                 con.rollback();
+             }
+             throw e;
+         } finally {
+             if (con != null) {
+                 con.setAutoCommit(originalAutoCommit);
+             }
+         }
+     }
     @Override
     public Doctor getDoctorById(int userId) throws Exception {
-        String sql = "SELECT u.id, u.name, u.gender, u.dob, u.address, u.phone, u.email, " +
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
                 "u.profile_image, u.role, u.created_at, u.updated_at, " +
                 "d.status, d.qualifications, d.department, d.experience_years " +
                 "FROM users u INNER JOIN doctor d ON u.id = d.user_id " +
@@ -206,9 +276,9 @@ public class DoctorDAO implements DoctorInterface {
 
                     Doctor doctor = new Doctor();
                     doctor.setUserId(rs.getInt("id"));
-                    doctor.setStatus(rs.getString("status"));
+                    doctor.setStatus(defaultStatus(rs.getString("status")));
                     doctor.setQualifications(rs.getString("qualifications"));
-                    doctor.setDepartment(rs.getString("department"));
+                    doctor.setDepartment(defaultDepartment(rs.getString("department")));
                     doctor.setExperienceYears(rs.getInt("experience_years"));
                     doctor.setUser(user);
 
@@ -264,5 +334,17 @@ public class DoctorDAO implements DoctorInterface {
                 con.setAutoCommit(originalAutoCommit);
             }
         }
+    }
+
+    private String defaultDepartment(String department) {
+        return (department != null && !department.trim().isEmpty())
+                ? department.trim()
+                : Doctor.GENERAL_MEDICINE;
+    }
+
+    private String defaultStatus(String status) {
+        return (status != null && !status.trim().isEmpty())
+                ? status.trim()
+                : "Active";
     }
 }

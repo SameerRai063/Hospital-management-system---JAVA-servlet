@@ -56,7 +56,7 @@
         </div>
         <nav class="flex-1 flex flex-col gap-1">
             <a class="bg-white text-[#0052FF] rounded-full mx-4 px-4 py-3 font-semibold transition-all duration-200 flex items-center gap-3 shadow-lg shadow-black/10"
-               href="dashboard.jsp">
+               href="${pageContext.request.contextPath}/patient/dashboard.jsp">
                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
                 <span class="text-sm font-medium">Dashboard</span>
             </a>
@@ -70,11 +70,39 @@
                 <span class="material-symbols-outlined">settings</span>
                 <span class="text-sm font-medium">Settings</span>
             </a>
+            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
+               href="${pageContext.request.contextPath}/chat">
+                <span class="material-symbols-outlined">forum</span>
+                <span class="text-sm font-medium">Chat</span>
+            </a>
         </nav>
     </aside>
 
     <%-- ===== MAIN CONTENT ===== --%>
     <main class="flex-1 flex flex-col overflow-y-auto">
+        <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-end px-10">
+            <div class="flex items-center gap-3">
+                <a href="${pageContext.request.contextPath}/notifications.jsp"
+                   class="relative inline-flex size-11 items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-[#0052FF] transition-colors"
+                   aria-label="Notifications">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute right-2 top-2 size-2 rounded-full bg-red-500"></span>
+                </a>
+                <div class="flex items-center gap-3 border-l border-slate-200 pl-5">
+                    <span class="text-sm font-bold text-slate-900">${sessionScope.userName}</span>
+                    <a href="${pageContext.request.contextPath}/patientProfile"
+                       class="inline-flex size-10 items-center justify-center rounded-full bg-blue-100 text-[#0052FF] hover:bg-blue-200 transition-colors"
+                       aria-label="Profile">
+                        <span class="material-symbols-outlined text-3xl">account_circle</span>
+                    </a>
+                </div>
+                <a href="${pageContext.request.contextPath}/logout"
+                   class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Logout
+                </a>
+            </div>
+        </header>
         <div class="flex-1 px-10 pb-10">
 
             <%-- ===== QUICK ACTION CARDS ===== --%>
@@ -82,7 +110,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-bold text-slate-800">Quick Actions</h2>
                 </div>
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-4 gap-6">
 
                     <%-- Card 1: My Profile --%>
                     <a href="${pageContext.request.contextPath}/patientProfile"
@@ -119,6 +147,17 @@
                             <p class="text-lg font-bold leading-tight">Provide Feedback</p>
                         </div>
                     </div>
+
+                    <a href="${pageContext.request.contextPath}/chat"
+                       class="bg-slate-900 p-6 rounded-2xl shadow-lg shadow-slate-900/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform no-underline">
+                        <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined">forum</span>
+                        </div>
+                        <div>
+                            <p class="text-white/80 text-xs font-medium mb-1">Reception Desk</p>
+                            <p class="text-lg font-bold leading-tight">Chat Support</p>
+                        </div>
+                    </a>
 
                 </div>
             </section>

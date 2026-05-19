@@ -1,7 +1,11 @@
 package Doctor.Model;
 
+import jakarta.persistence.*;
 import User.Model.User;
+import java.sql.Timestamp;
 
+@Entity
+@Table(name = "doctor")
 public class Doctor {
 
     // Department Constants
@@ -9,14 +13,33 @@ public class Doctor {
     public static final String NEUROLOGY = "Neurology";
     public static final String PEDIATRICS = "Pediatrics";
     public static final String ORTHOPEDICS = "Orthopedics";
+    public static final String GENERAL_MEDICINE = "General Medicine";
 
+    @Id
+    @Column(name = "user_id")
     private int userId;
+
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "qualifications")
     private String qualifications;
+
+    @Column(name = "department")
     private String department;
+
+    @Column(name = "experience_years")
     private int experienceYears;
 
-    // Optional: link with User
+    @Column(name = "created_at", insertable = false, updatable = false)
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
+    private Timestamp updatedAt;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "user_id")
     private User user;
 
     // Constructors
@@ -71,20 +94,11 @@ public class Doctor {
         return department;
     }
 
-    // Restrict department values
     public void setDepartment(String department) {
-        if (department.equals(CARDIOLOGY) ||
-                department.equals(NEUROLOGY) ||
-                department.equals(PEDIATRICS) ||
-                department.equals(ORTHOPEDICS)) {
-
-            this.department = department;
-
-        } else {
-            throw new IllegalArgumentException(
-                    "Invalid department. Allowed: Cardiology, Neurology, Pediatrics, Orthopedics"
-            );
+        if (department == null || department.trim().isEmpty()) {
+            throw new IllegalArgumentException("Department is required.");
         }
+        this.department = department.trim();
     }
 
     public int getExperienceYears() {
@@ -95,11 +109,30 @@ public class Doctor {
         this.experienceYears = experienceYears;
     }
 
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public User getUser() {
         return user;
     }
 
     public void setUser(User user) {
         this.user = user;
+        if (user != null) {
+            this.userId = user.getId();
+        }
     }
 }

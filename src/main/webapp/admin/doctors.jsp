@@ -5,7 +5,7 @@
 <%@ page import="Doctor.Model.Doctor" %>
 <%
   String userName = (session.getAttribute("userName") != null) ? (String) session.getAttribute("userName") : "Admin";
-  String userRole = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "Super Admin";
+  String userRole = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "";
   String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
   int totalDoctors = (request.getAttribute("totalDoctors") != null) ? (Integer) request.getAttribute("totalDoctors") : 0;
@@ -333,7 +333,7 @@
             <%
             } else {
             %>
-            <span style="background:#e5e7eb;color:#374151;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">Unknown</span>
+            <span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;"><%= (status == null || status.trim().isEmpty()) ? "Active" : status %></span>
             <%
               }
             %>
@@ -353,7 +353,7 @@
               View
             </button>
 
-            <a href="deleteDoctor?id=<%= doc.getUserId() %>" class="btn-delete" onclick="return confirm('Are you sure you want to delete this doctor? This action cannot be undone.');">
+            <a href="<%= request.getContextPath() %>/deleteDoctor?id=<%= doc.getUserId() %>" class="btn-delete" onclick="return confirm('Are you sure you want to delete this doctor? This action cannot be undone.');">
               Delete
             </a>
           </td>

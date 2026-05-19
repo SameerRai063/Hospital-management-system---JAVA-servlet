@@ -96,11 +96,11 @@
                   action="${pageContext.request.contextPath}/appointmentCreate"
                   method="POST">
             <input type="hidden" name="patientId" value="${sessionScope.loggedInUser.id}">
-            <input type="hidden" name="doctorId" id="hiddenDoctorId" value="1">
+            <input type="hidden" name="doctorId" id="hiddenDoctorId" value="0">
             <input type="hidden" name="appointmentDate" id="hiddenAppointmentDate" value="">
             <input type="hidden" name="appointmentTime" id="hiddenAppointmentTime" value="">
                 <input type="hidden" name="department" id="hiddenDepartment" value="">
-            <input type="hidden" name="status" value="Scheduled">
+            <input type="hidden" name="status" value="scheduled">
 
             <div class="px-8 py-6">
                 <div class="grid grid-cols-12 gap-6">
@@ -125,18 +125,9 @@
 
                                             <%-- Avatar --%>
                                         <div class="shrink-0">
-                                            <c:choose>
-                                                <c:when test="${not empty doctor.user.profileImage}">
-                                                    <img src="${pageContext.request.contextPath}/uploads/${doctor.user.profileImage}"
-                                                         alt="${doctor.user.name}"
-                                                         class="w-12 h-12 rounded-full object-cover border border-outline-variant"/>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center">
-                                                        <span class="material-symbols-outlined text-primary-container">person</span>
-                                                    </div>
-                                                </c:otherwise>
-                                            </c:choose>
+                                            <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center border border-outline-variant">
+                                                <span class="material-symbols-outlined text-primary-container text-3xl">account_circle</span>
+                                            </div>
                                         </div>
 
                                             <%-- Info --%>
@@ -289,13 +280,13 @@
         <p class="text-[10px] uppercase tracking-widest text-white/60 font-bold">Patient Portal</p>
     </div>
     <nav class="flex-1 flex flex-col gap-1">
-        <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 flex items-center gap-3 hover:bg-white/10 rounded-full" href="patient/dashboard.jsp">
+        <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3" href="${pageContext.request.contextPath}/patient/dashboard.jsp">
             <span class="material-symbols-outlined">dashboard</span>
             <span class="text-sm font-medium">Dashboard</span>
         </a>
-        <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
+        <a class="bg-white text-[#0052FF] rounded-full mx-4 px-4 py-3 font-semibold transition-all duration-200 flex items-center gap-3 shadow-lg shadow-black/10"
            href="${pageContext.request.contextPath}/patientAppointments">
-            <span class="material-symbols-outlined">history</span>
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
             <span class="text-sm font-medium">Appointments</span>
         </a>
 
@@ -303,6 +294,11 @@
            href="${pageContext.request.contextPath}/patientProfile">
             <span class="material-symbols-outlined">settings</span>
             <span class="text-sm font-medium">Settings</span>
+        </a>
+        <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
+           href="${pageContext.request.contextPath}/chat">
+            <span class="material-symbols-outlined">forum</span>
+            <span class="text-sm font-medium">Chat</span>
         </a>
     </nav>
     <div class="mt-auto p-8 border-t border-white/10">
@@ -319,13 +315,26 @@
             <span class="text-slate-400">|</span>
             <span id="headerDate" class="font-medium text-slate-600"></span>
         </div>
-        <div class="flex items-center gap-4 text-slate-500">
-            <button class="hover:bg-slate-50 p-2 rounded-lg transition-colors">
+        <div class="flex items-center gap-3 text-slate-500">
+            <a href="${pageContext.request.contextPath}/notifications.jsp"
+               class="relative hover:bg-slate-50 p-2 rounded-lg transition-colors"
+               aria-label="Notifications">
                 <span class="material-symbols-outlined">notifications</span>
-            </button>
-            <button class="hover:bg-slate-50 p-2 rounded-lg transition-colors">
-                <span class="material-symbols-outlined">account_circle</span>
-            </button>
+                <span class="absolute right-1.5 top-1.5 size-2 rounded-full bg-red-500"></span>
+            </a>
+            <div class="flex items-center gap-3 border-l border-slate-200 pl-5">
+                <span class="text-sm font-bold text-slate-900">${sessionScope.userName}</span>
+                <a href="${pageContext.request.contextPath}/patientProfile"
+                   class="inline-flex size-10 items-center justify-center rounded-full bg-blue-100 text-[#0052FF] hover:bg-blue-200 transition-colors"
+                   aria-label="Profile">
+                    <span class="material-symbols-outlined text-3xl">account_circle</span>
+                </a>
+            </div>
+            <a href="${pageContext.request.contextPath}/logout"
+               class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">logout</span>
+                Logout
+            </a>
         </div>
     </header>
 
@@ -366,19 +375,19 @@
 
                 <%-- Determine status display properties --%>
                 <c:choose>
-                    <c:when test="${apt.status == 'Scheduled'}">
+                    <c:when test="${apt.status == 'scheduled'}">
                         <c:set var="iconName"    value="schedule" />
                         <c:set var="iconBg"      value="bg-blue-50 text-blue-500" />
                         <c:set var="badgeCss"    value="bg-blue-100 text-blue-700" />
                         <c:set var="badgeLabel"  value="Scheduled" />
                     </c:when>
-                    <c:when test="${apt.status == 'Completed'}">
+                    <c:when test="${apt.status == 'completed'}">
                         <c:set var="iconName"    value="check_circle" />
                         <c:set var="iconBg"      value="bg-emerald-50 text-emerald-600" />
                         <c:set var="badgeCss"    value="bg-emerald-100 text-emerald-700" />
                         <c:set var="badgeLabel"  value="Completed" />
                     </c:when>
-                    <c:when test="${apt.status == 'Cancelled'}">
+                    <c:when test="${apt.status == 'cancelled'}">
                         <c:set var="iconName"    value="cancel" />
                         <c:set var="iconBg"      value="bg-red-50 text-red-500" />
                         <c:set var="badgeCss"    value="bg-red-100 text-red-700" />
@@ -407,7 +416,7 @@
                                     ${apt.appointmentDate}
                                 <span class="text-slate-300">|</span>
                                 <span class="material-symbols-outlined text-[16px] text-slate-400">schedule</span>
-                                    ${apt.appointmentTime}
+                                    ${apt.formattedAppointmentTime}
                             </div>
                         </div>
                     </div>
@@ -419,7 +428,7 @@
                             </span>
 
                             <%-- Show Review button only for Completed appointments --%>
-                        <c:if test="${apt.status == 'Completed'}">
+                        <c:if test="${apt.status == 'completed'}">
                             <button onclick="openReviewModal('${apt.doctorName}')"
                                     class="px-4 py-2 border border-primary-container text-primary-container rounded-lg hover:bg-primary-container/10 transition-colors text-sm font-bold flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[18px]">rate_review</span> Review
@@ -484,8 +493,8 @@
     /* ── Booking State ── */
     const bookingState = {
         department: "Cardiology Specialist Center",
-        doctorId: 1,
-        doctorName: "Dr. Arjun Mehta",
+        doctorId: 0,
+        doctorName: "Select a doctor",
         sqlDate: "",
         displayDate: "—",
         time: "—",
@@ -608,7 +617,16 @@
         document.getElementById('hiddenDoctorId').value        = bookingState.doctorId;
         document.getElementById('hiddenAppointmentDate').value = bookingState.sqlDate;
         document.getElementById('hiddenAppointmentTime').value = bookingState.time;
+        document.getElementById('hiddenDepartment').value      = bookingState.department;
     }
+
+    document.getElementById('appointmentForm').addEventListener('submit', function(event) {
+        syncBookingSummary();
+        if (!bookingState.doctorId || bookingState.doctorId === 0 || !bookingState.sqlDate || bookingState.time === '—' || !bookingState.department) {
+            event.preventDefault();
+            alert('Please select doctor, date and exact appointment time before booking.');
+        }
+    });
 
     /* ── Review Modal ── */
     let currentRating = 0;

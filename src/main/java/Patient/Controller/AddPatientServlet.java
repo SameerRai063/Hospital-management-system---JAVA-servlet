@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import utils.DBConnection;
 import User.Model.User;
@@ -78,14 +81,22 @@ public class AddPatientServlet extends HttpServlet {
 
             // 5. Success/Error Handling
             if (success) {
-                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?success=1");
+                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?success=patient_added");
             } else {
-                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=failed");
+                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=patient_failed");
             }
 
+        } catch (SQLIntegrityConstraintViolationException e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=email_exists");
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            String message = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=validation&message=" + message);
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=exception");
+            String message = URLEncoder.encode(e.getMessage() != null ? e.getMessage() : "Unable to save patient.", StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=exception&message=" + message);
         } finally {
             try { if (con != null) con.close(); } catch (Exception ignore) {}
         }

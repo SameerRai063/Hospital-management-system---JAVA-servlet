@@ -4,6 +4,7 @@ import Doctor.Model.dao.DoctorDAO;
 import Patient.Model.dao.PatientDAO;
 import Receptionist.Model.dao.ReceptionistDAO;
 import Payment.Model.dao.PaymentDAO;
+import utils.DashboardActivityService;
 import utils.DBConnection;
 
 import jakarta.servlet.*;
@@ -48,6 +49,7 @@ public class ReceptionistDashboardServlet extends HttpServlet {
             request.setAttribute("totalPatients",      totalPatients);
             request.setAttribute("totalReceptionists", totalReceptionists);
             request.setAttribute("totalRevenue",       totalRevenue);
+            DashboardActivityService.attachRecentActivity(con, request);
 
             // Forward to dashboard JSP
             RequestDispatcher rd = request.getRequestDispatcher("/receptionists/dashboard.jsp");

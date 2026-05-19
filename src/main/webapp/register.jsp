@@ -116,17 +116,6 @@
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
-    #avatarPreview {
-      transition: opacity 0.2s ease;
-    }
-    #uploadZone:hover {
-      border-color: #3d6374;
-      background-color: #f0f8fc;
-    }
-    #uploadZone.drag-over {
-      border-color: #3d6374;
-      background-color: #e0f2fb;
-    }
   </style>
 </head>
 <body class="bg-background min-h-screen flex items-center justify-center font-body-md text-on-background">
@@ -142,7 +131,7 @@
     </div>
     <img alt="Illustration"
          class="absolute inset-0 w-full h-full object-cover object-center mix-blend-multiply opacity-90"
-         src="https://lh3.googleusercontent.com/aida/ADBb0uinVHRWTl-slXDdcxYJ-HTsgYe2dq1RpuRWoyyu77JoWgFPSeHOvLX4xQIffSYenRTcDXwqvlOg0ioN0VOxdqNGSn86rRicOEylCMBMsUfh1VR9BxyskjdR5xBRBQZir-TqR7c5nwWO1S2g8Aurml0p9ll2_XiWRfZiEJGEjbC-MSlheNGIDytH9KhkKg1P_A_mLa4aZTUmMHSYlf6yjtj9eJGTlnHh3-jsmXzLo6c4N8wBD4D5RIJJt22U"/>
+         src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDDeFkvl4CxBUr3zaFSzFsT0cQ5F4zKop32QPPR8Z5Ly4-S2JJMeICQRblzN0R2bVfb6VQP3dkswA5EYb-20wq2eO692EREzOYPDQKRRoXbveMgWv3NeaNRzq4WwkRqTYYNE-DJi16BSQIe94MhQJyks1jcPPEbKUdzLbh0tSZeu2Jc2sG4GBK-eKMoS0WkVnHPoQY9e7RMP45bNpOE7Tcxp1mwfh3dThQmOPYx6EUN3lgwYSE90-2vf2ariFt2KzxvT8H9h2o83cU"/>
     <div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
   </div>
 
@@ -158,7 +147,6 @@
       <%-- enctype="multipart/form-data" required for file upload --%>
       <form action="${pageContext.request.contextPath}/register-patient"
             method="POST"
-            enctype="multipart/form-data"
             class="space-y-md">
 
         <%-- Alert Messages --%>
@@ -173,60 +161,7 @@
           </div>
         </c:if>
 
-        <%-- ===== PROFILE PHOTO UPLOAD ===== --%>
-        <div class="flex flex-col items-center gap-sm">
-          <p class="font-label-md text-on-surface-variant self-start">Profile Photo <span class="text-outline font-normal">(optional)</span></p>
-
-          <div class="flex items-center gap-md w-full">
-
-            <%-- Avatar preview circle --%>
-            <div class="relative flex-shrink-0">
-              <div id="avatarRing"
-                   class="w-20 h-20 rounded-full border-2 border-dashed border-tertiary-fixed-dim bg-surface-container flex items-center justify-center overflow-hidden">
-                <%-- Default icon shown before upload --%>
-                <span id="avatarIcon" class="material-symbols-outlined text-[40px] text-outline-variant">account_circle</span>
-                <%-- Preview image hidden until file chosen --%>
-                <img id="avatarPreview"
-                     src="#" alt="Profile preview"
-                     class="hidden w-full h-full object-cover rounded-full"/>
-              </div>
-              <%-- Remove button, shown after image selected --%>
-              <button id="removePhoto" type="button"
-                      class="hidden absolute -top-1 -right-1 w-6 h-6 rounded-full bg-error text-on-error flex items-center justify-center shadow-md hover:brightness-110 transition-all"
-                      onclick="clearPhoto()">
-                <span class="material-symbols-outlined text-[14px]">close</span>
-              </button>
-            </div>
-
-            <%-- Drop zone / click to upload --%>
-            <div id="uploadZone"
-                 class="flex-1 border-2 border-dashed border-tertiary-fixed-dim rounded-2xl p-sm cursor-pointer transition-all bg-surface-container-low"
-                 onclick="document.getElementById('profileImage').click()"
-                 ondragover="handleDragOver(event)"
-                 ondragleave="handleDragLeave(event)"
-                 ondrop="handleDrop(event)">
-              <div class="flex flex-col items-center gap-xs text-center pointer-events-none">
-                <span class="material-symbols-outlined text-[28px] text-secondary">cloud_upload</span>
-                <p class="font-body-sm text-on-surface-variant">
-                  <span class="text-secondary font-medium">Click to upload</span> or drag & drop
-                </p>
-                <p class="font-label-md text-outline">JPG, PNG or WEBP · Max 10 MB</p>
-                <p id="fileName" class="font-label-md text-secondary hidden"></p>
-              </div>
-            </div>
-
-            <%-- Hidden actual file input — name must match servlet's getPart("profileImage") --%>
-            <input type="file"
-                   id="profileImage"
-                   name="profileImage"
-                   accept="image/jpeg,image/png,image/webp"
-                   class="hidden"
-                   onchange="handleFileSelect(this)"/>
-          </div>
-        </div>
-        <%-- ===== END PROFILE PHOTO UPLOAD ===== --%>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
           <div>
             <label class="block font-label-md text-on-surface-variant mb-xs" for="name">Full Name</label>
             <div class="relative">
@@ -358,61 +293,6 @@
 </main>
 
 <script>
-  // ── Profile photo upload ──────────────────────────────────────────
-  function handleFileSelect(input) {
-    if (input.files && input.files[0]) {
-      applyFile(input.files[0]);
-    }
-  }
-
-  function applyFile(file) {
-    if (!file.type.match('image.*')) return;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      document.getElementById('avatarPreview').src = e.target.result;
-      document.getElementById('avatarPreview').classList.remove('hidden');
-      document.getElementById('avatarIcon').classList.add('hidden');
-      document.getElementById('removePhoto').classList.remove('hidden');
-      document.getElementById('avatarRing').classList.replace('border-dashed', 'border-solid');
-      document.getElementById('fileName').textContent = file.name;
-      document.getElementById('fileName').classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function clearPhoto() {
-    document.getElementById('profileImage').value = '';
-    document.getElementById('avatarPreview').src = '#';
-    document.getElementById('avatarPreview').classList.add('hidden');
-    document.getElementById('avatarIcon').classList.remove('hidden');
-    document.getElementById('removePhoto').classList.add('hidden');
-    document.getElementById('avatarRing').classList.replace('border-solid', 'border-dashed');
-    document.getElementById('fileName').classList.add('hidden');
-  }
-
-  function handleDragOver(e) {
-    e.preventDefault();
-    document.getElementById('uploadZone').classList.add('drag-over');
-  }
-
-  function handleDragLeave(e) {
-    document.getElementById('uploadZone').classList.remove('drag-over');
-  }
-
-  function handleDrop(e) {
-    e.preventDefault();
-    document.getElementById('uploadZone').classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      // Set the file on the real input
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      document.getElementById('profileImage').files = dt.files;
-      applyFile(file);
-    }
-  }
-
   // ── Password visibility toggle ────────────────────────────────────
   function togglePassword(fieldId, btn) {
     const input = document.getElementById(fieldId);

@@ -13,9 +13,7 @@ public class DatabaseSeederAdmin {
             Connection con = DBConnection.getConnection();
             con.setAutoCommit(false);
 
-            // =========================
-            // 1. INSERT INTO USERS
-            // =========================
+
             String userSql = "INSERT INTO users " +
                     "(name, gender, dob, address, phone, email, password, profile_image, role) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";

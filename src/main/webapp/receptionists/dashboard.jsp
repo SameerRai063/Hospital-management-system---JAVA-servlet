@@ -1,15 +1,23 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.time.LocalDate" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="java.util.List" %>
 <%
     String userName    = (session.getAttribute("userName") != null) ? (String) session.getAttribute("userName") : "Admin";
-    String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "Super Admin";
+    String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "";
     String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
     int    totalDoctors       = (request.getAttribute("totalDoctors")       != null) ? (Integer) request.getAttribute("totalDoctors")       : 0;
     int    totalPatients      = (request.getAttribute("totalPatients")      != null) ? (Integer) request.getAttribute("totalPatients")      : 0;
     int    totalReceptionists = (request.getAttribute("totalReceptionists") != null) ? (Integer) request.getAttribute("totalReceptionists") : 0;
     double totalRevenue       = (request.getAttribute("totalRevenue")       != null) ? (Double)  request.getAttribute("totalRevenue")       : 0.0;
+    List<String> activityLabels = (List<String>) request.getAttribute("activityLabels");
+    List<Integer> activityCounts = (List<Integer>) request.getAttribute("activityCounts");
+    List<Double> revenueCounts = (List<Double>) request.getAttribute("revenueCounts");
+    int activityMax = (request.getAttribute("activityMax") != null) ? (Integer) request.getAttribute("activityMax") : 1;
+    int activityTotal = (request.getAttribute("activityTotal") != null) ? (Integer) request.getAttribute("activityTotal") : 0;
+    double revenueMax = (request.getAttribute("revenueMax") != null) ? (Double) request.getAttribute("revenueMax") : 1.0;
+    double revenueTotal = (request.getAttribute("revenueTotal") != null) ? (Double) request.getAttribute("revenueTotal") : 0.0;
 
     String errorMessage = (String) request.getAttribute("errorMessage");
 %>
@@ -67,6 +75,16 @@
         .date { font-size: 13px; color: var(--text-gray); }
         .topbar-icons { display: flex; align-items: center; }
         .topbar-icons i { font-size: 18px; color: var(--text-gray); margin-left: 16px; cursor: pointer; }
+        .header-actions { display: flex; align-items: center; gap: 14px; }
+        .notification-btn { position: relative; width: 44px; height: 44px; border-radius: 50%; background: #f8fafc; color: #64748b; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+        .notification-btn i { font-size: 18px; }
+        .notification-dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+        .header-profile { display: flex; align-items: center; gap: 12px; border-left: 1px solid var(--border-color); padding-left: 20px; }
+        .header-name { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+        .profile-btn { width: 40px; height: 40px; border-radius: 50%; background: #dbeafe; color: var(--primary-blue); display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+        .profile-btn i { font-size: 22px; }
+        .logout-btn { display: inline-flex; align-items: center; gap: 8px; background: #0f172a; color: white; text-decoration: none; border-radius: 999px; padding: 10px 18px; font-size: 14px; font-weight: 700; }
+        .logout-btn:hover { background: #334155; }
         .btn-support { background-color: #f0fdf4; color: var(--primary-teal); border: 1px solid #bbf7d0; border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: 16px; }
         .content { padding: 32px; overflow-y: auto; flex: 1; background-color: #fdfdfd; }
         .page-header { margin-bottom: 24px; }
@@ -87,7 +105,33 @@
         .btn-quick-action { background-color: var(--quick-action-teal); color: white; border: none; border-radius: 8px; padding: 16px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; display: block; transition: background-color 0.2s; }
         .btn-quick-action:hover { background-color: #16a086; }
 
-        .recent-activity-container { min-height: 150px; display: flex; align-items: center; justify-content: center; color: var(--text-gray); font-size: 14px; }
+        .recent-activity-container { min-height: 190px; color: var(--text-gray); font-size: 14px; }
+        .activity-chart { width: 100%; min-height: 190px; display: flex; align-items: flex-end; gap: 14px; padding-top: 8px; }
+        .activity-bar-item { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .activity-count { font-size: 12px; font-weight: 700; color: var(--text-dark); line-height: 1; }
+        .activity-bar-track { width: 100%; height: 140px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px 8px 4px 4px; display: flex; align-items: flex-end; overflow: hidden; }
+        .activity-bar { width: 100%; min-height: 4px; background: linear-gradient(180deg, #22c7a8 0%, #0d7f6b 100%); border-radius: 8px 8px 0 0; }
+        .activity-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--text-gray); }
+        .activity-empty { min-height: 150px; display: flex; align-items: center; justify-content: center; }
+        .dashboard-charts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+        .chart-panel-title { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 14px; }
+        .revenue-chart { position: relative; min-height: 190px; padding: 8px 0 24px; }
+        .revenue-svg { width: 100%; height: 166px; display: block; overflow: visible; }
+        .revenue-grid-line { stroke: #e5e7eb; stroke-width: 1; }
+        .revenue-line { fill: none; stroke: #2554ff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .revenue-area { fill: rgba(37, 84, 255, 0.12); }
+        .revenue-point { fill: #ffffff; stroke: #2554ff; stroke-width: 2; }
+        .revenue-labels { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+        .revenue-labels span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 11px; color: var(--text-gray); }
+        .revenue-total { font-size: 12px; color: var(--text-gray); font-weight: 500; margin-top: -8px; margin-bottom: 8px; }
+        .chart-clickable { cursor: pointer; }
+        .activity-bar-item.selected .activity-bar-track { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37, 84, 255, 0.12); }
+        .revenue-point.selected { fill: var(--primary-blue); stroke: #ffffff; }
+        .revenue-hit-zone { fill: transparent; cursor: pointer; }
+        .chart-details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 16px; }
+        .chart-detail-item { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+        .chart-detail-item span { display: block; font-size: 11px; color: var(--text-gray); margin-bottom: 6px; }
+        .chart-detail-item strong { display: block; font-size: 16px; color: var(--text-dark); }
         .error-banner { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px 20px; margin-bottom: 20px; font-size: 13px; }
 
         /* ========================================= */
@@ -138,6 +182,7 @@
             <li class="nav-item"><a href="<%= request.getContextPath() %>/receptionists/doctors" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Doctors</a></li>
             <li class="nav-item"><a href="<%= request.getContextPath() %>/receptionists/patients" class="nav-link"><i class="fa-solid fa-users"></i> Patients</a></li>
             <li class="nav-item"><a href="<%= request.getContextPath() %>/receptionists/appointments" class="nav-link"><i class="fa-regular fa-calendar"></i> Appointments</a></li>
+            <li class="nav-item"><a href="<%= request.getContextPath() %>/chat" class="nav-link"><i class="fa-regular fa-comments"></i> Chat</a></li>
 
         </ul>
     </div>
@@ -161,13 +206,21 @@
 <div class="main-wrapper">
     <header class="topbar">
         <div class="topbar-left">Dashboard</div>
-        <div class="topbar-right">
-            <span class="date"><%= currentDate %></span>
-            <div class="topbar-icons">
+        <div class="header-actions">
+            <a href="<%= request.getContextPath() %>/notifications.jsp" class="notification-btn" aria-label="Notifications">
                 <i class="fa-regular fa-bell"></i>
-                <i class="fa-regular fa-circle-question"></i>
-                <button class="btn-support">Support</button>
+                <span class="notification-dot"></span>
+            </a>
+            <div class="header-profile">
+                <span class="header-name"><%= userName %></span>
+                <a href="#" class="profile-btn" aria-label="Profile">
+                    <i class="fa-regular fa-circle-user"></i>
+                </a>
             </div>
+            <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Logout
+            </a>
         </div>
     </header>
 
@@ -201,12 +254,100 @@
             <div class="quick-actions-grid" style="display: flex; gap: 16px;">
                 <button onclick="openModal('doctorModal')"  class="btn-quick-action" style="flex: 1;">Add Doctor</button>
                 <button onclick="openModal('patientModal')" class="btn-quick-action" style="flex: 1;">Add Patient</button>
+                <a href="<%= request.getContextPath() %>/chat" class="btn-quick-action" style="flex: 1;">Patient Chat</a>
             </div>
         </div>
 
         <div class="card">
             <h3 class="card-title">Recent Activity</h3>
-            <div class="recent-activity-container">No recent activity to display</div>
+            <div class="dashboard-charts">
+                <div>
+                    <div class="chart-panel-title">Activity</div>
+                    <div class="recent-activity-container">
+                    <% if (activityCounts == null || activityCounts.isEmpty() || activityTotal == 0) { %>
+                        <div class="activity-empty">No recent activity to display</div>
+                    <% } else { %>
+                    <div class="activity-chart">
+                        <% for (int i = 0; i < activityCounts.size(); i++) {
+                            int count = activityCounts.get(i);
+                            int height = Math.max(4, (int) Math.round((count * 100.0) / activityMax));
+                        %>
+                            <div class="activity-bar-item chart-clickable" data-chart-index="<%= i %>" onclick="selectDashboardDay(<%= i %>)" onkeydown="handleDashboardKey(event, <%= i %>)" role="button" tabindex="0">
+                                <div class="activity-count"><%= count %></div>
+                                <div class="activity-bar-track">
+                                    <div class="activity-bar" style="height: <%= height %>%;"></div>
+                                </div>
+                                <div class="activity-label"><%= activityLabels.get(i) %></div>
+                            </div>
+                        <% } %>
+                    </div>
+                    <% } %>
+                    </div>
+                </div>
+                <div>
+                    <div class="chart-panel-title">Revenue</div>
+                    <% if (revenueCounts == null || revenueCounts.isEmpty() || revenueTotal == 0) { %>
+                        <div class="activity-empty">No revenue to display</div>
+                    <% } else {
+                        StringBuilder points = new StringBuilder();
+                        StringBuilder area = new StringBuilder("0,150 ");
+                        for (int i = 0; i < revenueCounts.size(); i++) {
+                            double value = revenueCounts.get(i);
+                            double x = i * (300.0 / Math.max(revenueCounts.size() - 1, 1));
+                            double y = 150 - ((value / revenueMax) * 130);
+                            points.append(String.format(java.util.Locale.US, "%.1f,%.1f ", x, y));
+                            area.append(String.format(java.util.Locale.US, "%.1f,%.1f ", x, y));
+                        }
+                        area.append("300,150");
+                    %>
+                        <div class="revenue-total">Last 7 days: NPR <%= String.format("%,.2f", revenueTotal) %></div>
+                        <div class="revenue-chart">
+                            <svg class="revenue-svg" viewBox="0 0 300 166" preserveAspectRatio="none" aria-label="Revenue line chart">
+                                <line class="revenue-grid-line" x1="0" y1="20" x2="300" y2="20"></line>
+                                <line class="revenue-grid-line" x1="0" y1="85" x2="300" y2="85"></line>
+                                <line class="revenue-grid-line" x1="0" y1="150" x2="300" y2="150"></line>
+                                <polygon class="revenue-area" points="<%= area.toString() %>"></polygon>
+                                <polyline class="revenue-line" points="<%= points.toString() %>"></polyline>
+                                <% for (int i = 0; i < revenueCounts.size(); i++) {
+                                    double value = revenueCounts.get(i);
+                                    double x = i * (300.0 / Math.max(revenueCounts.size() - 1, 1));
+                                    double y = 150 - ((value / revenueMax) * 130);
+                                    double hitX = Math.max(0, x - 22);
+                                    double hitWidth = (i == 0 || i == revenueCounts.size() - 1) ? 44 : 50;
+                                %>
+                                    <rect class="revenue-hit-zone" data-chart-index="<%= i %>" onclick="selectDashboardDay(<%= i %>)" x="<%= String.format(java.util.Locale.US, "%.1f", hitX) %>" y="0" width="<%= String.format(java.util.Locale.US, "%.1f", hitWidth) %>" height="166"></rect>
+                                    <circle class="revenue-point chart-clickable" data-chart-index="<%= i %>" onclick="selectDashboardDay(<%= i %>)" cx="<%= String.format(java.util.Locale.US, "%.1f", x) %>" cy="<%= String.format(java.util.Locale.US, "%.1f", y) %>" r="3.5"></circle>
+                                <% } %>
+                            </svg>
+                            <div class="revenue-labels">
+                                <% for (String label : activityLabels) { %>
+                                    <span><%= label %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            <% if (activityLabels != null && !activityLabels.isEmpty()) {
+                int selectedIndex = activityLabels.size() - 1;
+                int selectedActivity = (activityCounts != null && activityCounts.size() > selectedIndex) ? activityCounts.get(selectedIndex) : 0;
+                double selectedRevenue = (revenueCounts != null && revenueCounts.size() > selectedIndex) ? revenueCounts.get(selectedIndex) : 0.0;
+            %>
+                <div class="chart-details">
+                    <div class="chart-detail-item">
+                        <span>Date</span>
+                        <strong id="chartDetailDate"><%= activityLabels.get(selectedIndex) %></strong>
+                    </div>
+                    <div class="chart-detail-item">
+                        <span>Activity</span>
+                        <strong id="chartDetailActivity"><%= selectedActivity %></strong>
+                    </div>
+                    <div class="chart-detail-item">
+                        <span>Revenue</span>
+                        <strong id="chartDetailRevenue">NPR <%= String.format("%,.2f", selectedRevenue) %></strong>
+                    </div>
+                </div>
+            <% } %>
         </div>
     </main>
 </div>
@@ -220,12 +361,12 @@
 
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="name" required placeholder="Dr. Samir Rai">
+                    <input type="text" name="name" required placeholder="Doctor name">
                 </div>
 
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" name="email" required placeholder="samir@curecloud.com">
+                    <input type="email" name="email" required placeholder="doctor@example.com">
                 </div>
 
                 <div class="form-group">
@@ -372,6 +513,60 @@
 
 
 <script>
+    const dashboardChartData = {
+        labels: [
+            <% if (activityLabels != null) { for (int i = 0; i < activityLabels.size(); i++) { %>
+                "<%= activityLabels.get(i) %>"<%= (i < activityLabels.size() - 1) ? "," : "" %>
+            <% } } %>
+        ],
+        activity: [
+            <% if (activityCounts != null) { for (int i = 0; i < activityCounts.size(); i++) { %>
+                <%= activityCounts.get(i) %><%= (i < activityCounts.size() - 1) ? "," : "" %>
+            <% } } %>
+        ],
+        revenue: [
+            <% if (revenueCounts != null) { for (int i = 0; i < revenueCounts.size(); i++) { %>
+                <%= String.format(java.util.Locale.US, "%.2f", revenueCounts.get(i)) %><%= (i < revenueCounts.size() - 1) ? "," : "" %>
+            <% } } %>
+        ]
+    };
+
+    function formatNpr(value) {
+        return 'NPR ' + Number(value || 0).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function selectDashboardDay(index) {
+        if (!dashboardChartData.labels[index]) return;
+
+        document.querySelectorAll('[data-chart-index]').forEach(function(el) {
+            el.classList.toggle('selected', Number(el.dataset.chartIndex) === index);
+        });
+
+        const dateEl = document.getElementById('chartDetailDate');
+        const activityEl = document.getElementById('chartDetailActivity');
+        const revenueEl = document.getElementById('chartDetailRevenue');
+
+        if (dateEl) dateEl.textContent = dashboardChartData.labels[index];
+        if (activityEl) activityEl.textContent = dashboardChartData.activity[index] || 0;
+        if (revenueEl) revenueEl.textContent = formatNpr(dashboardChartData.revenue[index] || 0);
+    }
+
+    function handleDashboardKey(event, index) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            selectDashboardDay(index);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (dashboardChartData.labels.length > 0) {
+            selectDashboardDay(dashboardChartData.labels.length - 1);
+        }
+    });
+
     // Open a specific modal
     function openModal(modalId) {
         document.getElementById(modalId).style.display = 'flex';

@@ -24,11 +24,12 @@ public class ViewPatientsServlet extends HttpServlet {
             // 2. Pass connection to DAO
             PatientDAO patientDAO = new PatientDAO(con);
 
-            // 3. Call method
-            List<Patient> patients = patientDAO.getAllPatients();
+            String search = request.getParameter("search");
+            List<Patient> patients = patientDAO.searchPatients(search);
 
             // 4. Send to JSP
             request.setAttribute("patientList", patients);
+            request.setAttribute("search", search);
             request.setAttribute("currentDate", java.time.LocalDate.now());
             request.getRequestDispatcher("/admin/patients.jsp").forward(request, response);
 

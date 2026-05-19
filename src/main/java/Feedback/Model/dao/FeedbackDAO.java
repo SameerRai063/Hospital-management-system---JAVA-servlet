@@ -16,7 +16,7 @@ public class FeedbackDAO {
 
     // ── Count total feedbacks ──────────────────────────────────────────────
     public boolean addFeedback(Feedback feedback) {
-        String sql = "INSERT INTO feedback (patient_id, comment, rating, created_at) VALUES (?, ?, ?, NOW())";
+        String sql = "INSERT INTO feedback (patient_id, comment, rating) VALUES (?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, feedback.getPatientId());
             ps.setString(2, feedback.getComment());

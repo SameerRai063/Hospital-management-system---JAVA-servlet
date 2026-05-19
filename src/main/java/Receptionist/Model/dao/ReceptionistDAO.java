@@ -17,7 +17,7 @@ public class ReceptionistDAO implements ReceptionistInterface {
 
     @Override
     public Receptionist getReceptionistById(int userId) throws Exception {
-        String sql = "SELECT u.id, u.name, u.gender, u.dob, u.address, u.phone, u.email, " +
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
                 "u.profile_image, u.role, u.created_at, u.updated_at, " +
                 "r.status " +
                 "FROM users u INNER JOIN receptionist r ON u.id = r.user_id " +
@@ -53,59 +53,77 @@ public class ReceptionistDAO implements ReceptionistInterface {
     }
 @Override
 public boolean addReceptionist(Receptionist receptionist) throws Exception {
-    User user = receptionist.getUser();
-    if (user == null) return false;
+    if (receptionist == null || receptionist.getUser() == null) {
+        throw new IllegalArgumentException("Receptionist and User details are required.");
+    }
 
-    String userQuery = "INSERT INTO users (name, gender, dob, address, phone, email, password, role, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?, 'receptionist', ?)";
-    String recQuery = "INSERT INTO receptionist (user_id, status) VALUES (?, ?)";
+    User user = receptionist.getUser();
+
+    // Validate required fields
+    if (user.getName() == null || user.getName().trim().isEmpty()) {
+        throw new IllegalArgumentException("Name is required.");
+    }
+    if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+        throw new IllegalArgumentException("Email is required.");
+    }
+    if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+        throw new IllegalArgumentException("Password is required.");
+    }
 
     boolean originalAutoCommit = con.getAutoCommit();
-
     try {
-        con.setAutoCommit(false); // Start Transaction
+        con.setAutoCommit(false); // start transaction
 
-        // 1. Insert into Users Table
-        int generatedUserId = -1;
-        try (PreparedStatement userStmt = con.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS)) {
-            userStmt.setString(1, user.getName());
-            userStmt.setString(2, user.getGender());
-            userStmt.setDate(3, user.getDob());
-            userStmt.setString(4, user.getAddress());
-            userStmt.setString(5, user.getPhone());
-            userStmt.setString(6, user.getEmail());
-            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-            userStmt.setString(7, hashedPassword);
-            userStmt.setString(8, user.getProfileImage());
+        String safeName = user.getName().trim();
+        String safeEmail = user.getEmail().trim();
+        String hashedPassword = BCrypt.hashpw(user.getPassword().trim(), BCrypt.gensalt());
+        String profileImage = user.getProfileImage() != null && !user.getProfileImage().isEmpty() ? user.getProfileImage() : "default.png";
 
-            int affectedRows = userStmt.executeUpdate();
-            if (affectedRows == 0) throw new SQLException("Creating user failed, no rows affected.");
+        // Step 1: Insert user
+        String userSQL = "INSERT INTO users (name, gender, dob, address, phone, email, password, role, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement psUser = con.prepareStatement(userSQL, Statement.RETURN_GENERATED_KEYS)) {
+            psUser.setString(1, safeName);
+            psUser.setString(2, user.getGender());
+            psUser.setDate(3, user.getDob());
+            psUser.setString(4, user.getAddress());
+            psUser.setString(5, user.getPhone());
+            psUser.setString(6, safeEmail);
+            psUser.setString(7, hashedPassword);
+            psUser.setString(8, "receptionist");
+            psUser.setString(9, profileImage);
+            psUser.executeUpdate();
 
-            try (ResultSet generatedKeys = userStmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    generatedUserId = generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Creating user failed, no ID obtained.");
+            // Get generated user ID
+            try (ResultSet rs = psUser.getGeneratedKeys()) {
+                if (!rs.next()) {
+                    con.rollback();
+                    return false;
+                }
+                int userId = rs.getInt(1);
+
+                // Step 2: Insert receptionist details
+                String receptionistSQL = "INSERT INTO receptionist (user_id, status) " +
+                        "VALUES (?, ?)";
+                try (PreparedStatement psReceptionist = con.prepareStatement(receptionistSQL)) {
+                    psReceptionist.setInt(1, userId);
+                    psReceptionist.setString(2, receptionist.getStatus() != null && !receptionist.getStatus().isEmpty() ? receptionist.getStatus() : "Active");
+                    psReceptionist.executeUpdate();
                 }
             }
         }
 
-        // 2. Insert into Receptionists Table
-        try (PreparedStatement recStmt = con.prepareStatement(recQuery)) {
-            recStmt.setInt(1, generatedUserId);
-            recStmt.setString(2, receptionist.getStatus());
-
-            recStmt.executeUpdate();
-        }
-
-        con.commit(); // Success: Commit both queries
+        con.commit();
         return true;
 
     } catch (Exception e) {
-        con.rollback(); // Failure: Undo everything
-        e.printStackTrace();
+        if (con != null) {
+            con.rollback();
+        }
         throw e;
     } finally {
-        con.setAutoCommit(originalAutoCommit);
+        if (con != null) {
+            con.setAutoCommit(originalAutoCommit);
+        }
     }
 }
     @Override
@@ -113,7 +131,7 @@ public boolean addReceptionist(Receptionist receptionist) throws Exception {
         List<Receptionist> receptionists = new ArrayList<>();
 
         // SQL JOIN to fetch User details AND Receptionist details
-        String sql = "SELECT u.id, u.name, u.gender, u.dob, u.address, u.phone, u.email, " +
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
                 "u.profile_image, u.role, u.created_at, u.updated_at, " +
                 "r.status " +
                 "FROM users u " +
@@ -205,7 +223,6 @@ public boolean addReceptionist(Receptionist receptionist) throws Exception {
         }
 
         String checkAuthQuery = "SELECT password FROM users WHERE id = ?";
-        // Added profile_image to the query
         String updateUserQuery = "UPDATE users SET name = ?, email = ?, phone = ?, address = ?, password = ?, profile_image = ? WHERE id = ?";
         String updateReceptionistQuery = "UPDATE receptionist SET status = ? WHERE user_id = ?";
 

@@ -28,65 +28,81 @@ public class PatientDAO implements PatientInterface {
         }
     }
     public boolean addPatient(Patient patient) throws Exception {
-        User user = patient.getUser();
-        if (user == null) return false;
+        if (patient == null || patient.getUser() == null) {
+            throw new IllegalArgumentException("Patient and User details are required.");
+        }
 
-        String userQuery = "INSERT INTO users (name, gender, dob, address, phone, email, password, role, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?, 'patient', ?)";
-        String patientQuery = "INSERT INTO patient (user_id, blood_group, is_active) VALUES (?, ?, ?)";
+        User user = patient.getUser();
+
+        // Validate required fields
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name is required.");
+        }
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("Email is required.");
+        }
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Password is required.");
+        }
 
         boolean originalAutoCommit = con.getAutoCommit();
-
         try {
-            con.setAutoCommit(false);
+            con.setAutoCommit(false); // start transaction
 
-            int generatedUserId = -1;
-            try (PreparedStatement userStmt = con.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS)) {
-                userStmt.setString(1, user.getName());
-                userStmt.setString(2, user.getGender());
-                userStmt.setDate(3, user.getDob());
-                userStmt.setString(4, user.getAddress());
-                userStmt.setString(5, user.getPhone());
-                userStmt.setString(6, user.getEmail());
-                String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+            // Step 1: Insert user
+            String userSQL = "INSERT INTO users (name, gender, dob, address, phone, email, password, role, profile_image) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement psUser = con.prepareStatement(userSQL, Statement.RETURN_GENERATED_KEYS)) {
+                psUser.setString(1, user.getName().trim());
+                psUser.setString(2, user.getGender());
+                psUser.setDate(3, user.getDob());
+                psUser.setString(4, user.getAddress());
+                psUser.setString(5, user.getPhone());
+                psUser.setString(6, user.getEmail().trim());
+                psUser.setString(7, BCrypt.hashpw(user.getPassword().trim(), BCrypt.gensalt()));
+                psUser.setString(8, "patient");
+                psUser.setString(9, user.getProfileImage() != null && !user.getProfileImage().isEmpty() ? user.getProfileImage() : "default.png");
+                psUser.executeUpdate();
 
-                userStmt.setString(7, hashedPassword);
-                userStmt.setString(8, user.getProfileImage());
+                // Get generated user ID
+                try (ResultSet rs = psUser.getGeneratedKeys()) {
+                    if (!rs.next()) {
+                        con.rollback();
+                        return false;
+                    }
+                    int userId = rs.getInt(1);
 
-                int affectedRows = userStmt.executeUpdate();
-                if (affectedRows == 0) throw new SQLException("Creating user failed, no rows affected.");
-
-                try (ResultSet generatedKeys = userStmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        generatedUserId = generatedKeys.getInt(1);
-                    } else {
-                        throw new SQLException("Creating user failed, no ID obtained.");
+                    // Step 2: Insert patient details
+                    String patientSQL = "INSERT INTO patient (user_id, blood_group, is_active) " +
+                            "VALUES (?, ?, ?)";
+                    try (PreparedStatement psPatient = con.prepareStatement(patientSQL)) {
+                        psPatient.setInt(1, userId);
+                        psPatient.setString(2, patient.getBloodGroup());
+                        psPatient.setBoolean(3, patient.isActive());
+                        psPatient.executeUpdate();
                     }
                 }
-            }
-
-            try (PreparedStatement patientStmt = con.prepareStatement(patientQuery)) {
-                patientStmt.setInt(1, generatedUserId);
-                patientStmt.setString(2, patient.getBloodGroup());
-                patientStmt.setBoolean(3, patient.isActive());
-                patientStmt.executeUpdate();
             }
 
             con.commit();
             return true;
 
         } catch (Exception e) {
-            con.rollback();
-            e.printStackTrace();
+            if (con != null) {
+                con.rollback();
+            }
             throw e;
         } finally {
-            con.setAutoCommit(originalAutoCommit);
+            if (con != null) {
+                con.setAutoCommit(originalAutoCommit);
+            }
         }
     }
 
     @Override
     public List<Patient> getAllPatients() throws Exception {
         List<Patient> patients = new ArrayList<>();
-        String sql = "SELECT u.id, u.name, u.gender, u.dob, u.address, u.phone, u.email, " +
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
                 "u.profile_image, u.role, u.created_at, u.updated_at, " +
                 "p.blood_group, p.is_active " +
                 "FROM users u " +
@@ -112,17 +128,65 @@ public class PatientDAO implements PatientInterface {
             Patient patient = new Patient();
             patient.setUserId(rs.getInt("id"));
             patient.setBloodGroup(rs.getString("blood_group"));
-            boolean isActive = "yes".equalsIgnoreCase(rs.getString("is_active"));
-            patient.setActive(isActive);
+            patient.setActive(rs.getBoolean("is_active"));
             patient.setUser(user);
 
             patients.add(patient);
         }
         return patients;
     }
+
+    public List<Patient> searchPatients(String searchTerm) throws Exception {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAllPatients();
+        }
+
+        List<Patient> patients = new ArrayList<>();
+        String like = "%" + searchTerm.trim() + "%";
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
+                "u.profile_image, u.role, u.created_at, u.updated_at, " +
+                "p.blood_group, p.is_active " +
+                "FROM users u " +
+                "INNER JOIN patient p ON u.id = p.user_id " +
+                "WHERE u.role = 'patient' " +
+                "AND (u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ? OR p.blood_group LIKE ? OR CAST(u.id AS CHAR) LIKE ?) " +
+                "ORDER BY u.name";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            for (int i = 1; i <= 5; i++) {
+                ps.setString(i, like);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt("id"));
+                    user.setName(rs.getString("name"));
+                    user.setGender(rs.getString("gender"));
+                    user.setDob(rs.getDate("dob"));
+                    user.setAddress(rs.getString("address"));
+                    user.setPhone(rs.getString("phone"));
+                    user.setEmail(rs.getString("email"));
+                    user.setProfileImage(rs.getString("profile_image"));
+                    user.setRole(rs.getString("role"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    user.setUpdatedAt(rs.getTimestamp("updated_at"));
+
+                    Patient patient = new Patient();
+                    patient.setUserId(rs.getInt("id"));
+                    patient.setBloodGroup(rs.getString("blood_group"));
+                    patient.setActive(rs.getBoolean("is_active"));
+                    patient.setUser(user);
+                    patients.add(patient);
+                }
+            }
+        }
+
+        return patients;
+    }
     @Override
     public Patient getPatientById(int userId) throws Exception {
-        String sql = "SELECT u.id, u.name, u.gender, u.dob, u.address, u.phone, u.email, " +
+        String sql = "SELECT u.id, u.name AS name, u.gender, u.dob, u.address, u.phone, u.email, " +
                 "u.profile_image, u.role, u.created_at, u.updated_at, " +
                 "p.blood_group, p.is_active " +
                 "FROM users u INNER JOIN patient p ON u.id = p.user_id " +
@@ -148,7 +212,7 @@ public class PatientDAO implements PatientInterface {
                     Patient patient = new Patient();
                     patient.setUserId(rs.getInt("id"));
                     patient.setBloodGroup(rs.getString("blood_group"));
-                    patient.setActive("yes".equalsIgnoreCase(rs.getString("is_active")));
+                    patient.setActive(rs.getBoolean("is_active"));
                     patient.setUser(user);
 
                     return patient;
@@ -161,7 +225,6 @@ public class PatientDAO implements PatientInterface {
     public boolean registerPatient(Patient patient) throws Exception {
         User user = patient.getUser();
 
-        // Duplicate email check
         String checkSql = "SELECT 1 FROM users WHERE email = ?";
         try (PreparedStatement check = con.prepareStatement(checkSql)) {
             check.setString(1, user.getEmail());
@@ -172,8 +235,7 @@ public class PatientDAO implements PatientInterface {
 
         con.setAutoCommit(false);
 
-        try {
-            // 1. Insert into users
+            try {
             String insertUser =
                     "INSERT INTO users (name, gender, dob, address, phone, email, password, profile_image, role) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -181,15 +243,14 @@ public class PatientDAO implements PatientInterface {
             int generatedUserId;
 
             try (PreparedStatement ps = con.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, user.getName());
+                String safeName = (user.getName() != null) ? user.getName().trim() : "";
+                ps.setString(1, safeName);
                 ps.setString(2, user.getGender());
                 ps.setDate  (3, user.getDob());
                 ps.setString(4, user.getAddress());
                 ps.setString(5, user.getPhone());
                 ps.setString(6, user.getEmail());
-                String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-
-                ps.setString(7, hashedPassword);
+                ps.setString(7, BCrypt.hashpw(user.getPassword(), BCrypt.gensalt())); // hash once here
                 ps.setString(8, user.getProfileImage());
                 ps.setString(9, user.getRole());
                 ps.executeUpdate();
@@ -203,14 +264,13 @@ public class PatientDAO implements PatientInterface {
                 }
             }
 
-            // 2. Insert into patient
             String insertPatient =
                     "INSERT INTO patient (user_id, blood_group, is_active) VALUES (?, ?, ?)";
 
             try (PreparedStatement ps = con.prepareStatement(insertPatient)) {
                 ps.setInt   (1, generatedUserId);
                 ps.setString(2, patient.getBloodGroup());
-                ps.setString(3, patient.isActive() ? "yes" : "no");
+                ps.setBoolean(3, patient.isActive());
                 ps.executeUpdate();
             }
 
@@ -321,10 +381,10 @@ public class PatientDAO implements PatientInterface {
                 userStmt.setString(1, patient.getUser().getName());
                 userStmt.setString(2, patient.getUser().getEmail());
                 userStmt.setString(3, patient.getUser().getPhone());
-                userStmt.setString(4, patient.getUser().getGender()); // ← added
+                userStmt.setString(4, patient.getUser().getGender());
                 userStmt.setString(5, patient.getUser().getAddress());
                 userStmt.setString(6, passwordToSave);
-                userStmt.setInt(7, patient.getUserId());              // ← shifted to 7
+                userStmt.setInt(7, patient.getUserId());
 
                 int userRowsAffected = userStmt.executeUpdate();
                 if (userRowsAffected == 0) {

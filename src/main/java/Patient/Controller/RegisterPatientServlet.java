@@ -5,15 +5,12 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.annotation.MultipartConfig;
 
-import org.mindrot.jbcrypt.BCrypt;
 import utils.DBConnection;
 import User.Model.User;
 import Patient.Model.Patient;
 import Patient.Model.dao.PatientDAO;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.Date;
 
@@ -24,8 +21,6 @@ import java.sql.Date;
         maxRequestSize    = 1024 * 1024 * 50
 )
 public class RegisterPatientServlet extends HttpServlet {
-
-    private static final String UPLOAD_DIR = "uploads" + File.separator + "patients";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -62,31 +57,13 @@ public class RegisterPatientServlet extends HttpServlet {
                 return;
             }
 
-            // Profile image upload
             String fileName = "default_patient.png";
-            Part filePart   = request.getPart("profileImage");
 
-            if (filePart != null && filePart.getSize() > 0) {
-                String originalName = Paths.get(filePart.getSubmittedFileName())
-                        .getFileName().toString();
-                fileName = System.currentTimeMillis() + "_" + originalName;
-
-                String uploadPath = getServletContext().getRealPath("")
-                        + File.separator + UPLOAD_DIR;
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) uploadDir.mkdirs();
-
-                filePart.write(uploadPath + File.separator + fileName);
-            }
-
-            // Hash password
-            String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
-
-            // Build User
+            // Build User — password is plain text, DAO will hash it
             User user = new User();
             user.setName(name);
             user.setEmail(email);
-            user.setPassword(hashedPassword);
+            user.setPassword(plainPassword);
             user.setPhone(phone);
             user.setGender(gender);
             user.setAddress(address);

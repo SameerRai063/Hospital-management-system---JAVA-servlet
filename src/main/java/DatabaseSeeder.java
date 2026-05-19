@@ -10,27 +10,36 @@ public class DatabaseSeeder {
     public static void main(String[] args) {
 
         try {
+            String seedName = requireEnv("CURECLOUD_SEED_DOCTOR_NAME");
+            String seedGender = requireEnv("CURECLOUD_SEED_DOCTOR_GENDER");
+            String seedDob = requireEnv("CURECLOUD_SEED_DOCTOR_DOB");
+            String seedAddress = requireEnv("CURECLOUD_SEED_DOCTOR_ADDRESS");
+            String seedPhone = requireEnv("CURECLOUD_SEED_DOCTOR_PHONE");
+            String seedEmail = requireEnv("CURECLOUD_SEED_DOCTOR_EMAIL");
+            String seedPassword = requireEnv("CURECLOUD_SEED_DOCTOR_PASSWORD");
+            String seedStatus = requireEnv("CURECLOUD_SEED_DOCTOR_STATUS");
+            String seedQualifications = requireEnv("CURECLOUD_SEED_DOCTOR_QUALIFICATIONS");
+            String seedDepartment = requireEnv("CURECLOUD_SEED_DOCTOR_DEPARTMENT");
+            int seedExperienceYears = Integer.parseInt(requireEnv("CURECLOUD_SEED_DOCTOR_EXPERIENCE_YEARS"));
+
             Connection con = DBConnection.getConnection();
             con.setAutoCommit(false);
 
-            // =========================
-            // 1. INSERT INTO USERS
-            // =========================
+
             String userSql = "INSERT INTO users " +
                     "(name, gender, dob, address, phone, email, password, profile_image, role) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             PreparedStatement userPs = con.prepareStatement(userSql, PreparedStatement.RETURN_GENERATED_KEYS);
 
-            userPs.setString(1, "Dr. Samir");
-            userPs.setString(2, "Male");
-            userPs.setDate(3, java.sql.Date.valueOf("1990-03-22"));
-            userPs.setString(4, "Lalitpur, Nepal");
-            userPs.setString(5, "9811111111");
-            userPs.setString(6, "doctor1@gmail.com");
+            userPs.setString(1, seedName);
+            userPs.setString(2, seedGender);
+            userPs.setDate(3, java.sql.Date.valueOf(seedDob));
+            userPs.setString(4, seedAddress);
+            userPs.setString(5, seedPhone);
+            userPs.setString(6, seedEmail);
 
-            // BCrypt password for testing ("123456")
-            String hashedPassword = BCrypt.hashpw("123456", BCrypt.gensalt());
+            String hashedPassword = BCrypt.hashpw(seedPassword, BCrypt.gensalt());
             userPs.setString(7, hashedPassword);
 
             userPs.setString(8, null);
@@ -46,9 +55,7 @@ public class DatabaseSeeder {
                 userId = rs.getInt(1);
             }
 
-            // =========================
-            // 2. INSERT INTO DOCTOR
-            // =========================
+
             String doctorSql = "INSERT INTO doctor " +
                     "(user_id, status, qualifications, department, experience_years) " +
                     "VALUES (?, ?, ?, ?, ?)";
@@ -56,10 +63,10 @@ public class DatabaseSeeder {
             PreparedStatement docPs = con.prepareStatement(doctorSql);
 
             docPs.setInt(1, userId);
-            docPs.setString(2, "on leave");
-            docPs.setString(3, "MBBS, MD Cardiology");
-            docPs.setString(4, "Cardiology");
-            docPs.setInt(5, 8);
+            docPs.setString(2, seedStatus);
+            docPs.setString(3, seedQualifications);
+            docPs.setString(4, seedDepartment);
+            docPs.setInt(5, seedExperienceYears);
 
             docPs.executeUpdate();
 
@@ -72,5 +79,13 @@ public class DatabaseSeeder {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static String requireEnv(String key) {
+        String value = System.getenv(key);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalStateException(key + " is required to run DatabaseSeeder.");
+        }
+        return value.trim();
     }
 }

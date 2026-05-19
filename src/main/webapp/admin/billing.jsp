@@ -43,7 +43,7 @@
     .page-title h2 { font-size: 24px; font-weight: 700; color: #1a202c; }
     .page-title p { font-size: 14px; color: var(--text-gray); margin-top: 4px; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card { background-color: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
     .stat-info h3 { font-size: 12px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; margin-bottom: 12px; }
     .stat-info .value { font-size: 24px; font-weight: 700; color: #111827; }
@@ -98,8 +98,8 @@
   <div class="user-profile">
     <div class="avatar">${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
     <div class="user-info">
-      <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Samir'}</h4>
-      <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : 'Super Admin'}</p>
+      <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : ''}</h4>
+      <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : ''}</p>
     </div>
   </div>
 </aside>
@@ -140,17 +140,11 @@
           <div class="value">NPR ${not empty pendingAmount ? pendingAmount : '0.00'} <span class="subtext">${not empty pendingCount ? pendingCount : '0'} items</span></div>
         </div>
       </div>
-      <div class="stat-card" style="background: #fef2f2;">
-        <div class="stat-info">
-          <h3>FAILED PAYMENTS</h3>
-          <div class="value">${not empty failedCount ? failedCount : '0'}</div>
-        </div>
-      </div>
     </div>
 
-    <form action="billing.jsp" method="GET" class="search-bar-content">
+    <form action="<%= request.getContextPath() %>/billing" method="GET" class="search-bar-content">
       <i class="fa-solid fa-magnifying-glass" style="color: var(--text-gray);"></i>
-      <input type="text" name="search" placeholder="Search by Patient Name or ID..." value="${param.search}">
+      <input type="text" name="search" placeholder="Search by patient, ID, appointment, status, amount, or date..." value="${search}">
     </form>
 
     <div class="table-container">
@@ -161,7 +155,6 @@
           <th>PATIENT</th>
           <th>SERVICE/APPT ID</th>
           <th>AMOUNT</th>
-          <th>METHOD</th>
           <th>DATE</th>
           <th>STATUS</th>
 
@@ -171,7 +164,7 @@
         <c:choose>
           <c:when test="${empty billingList}">
             <tr>
-              <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-gray);">No billing records found.</td>
+              <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-gray);">No billing records found.</td>
             </tr>
           </c:when>
           <c:otherwise>
@@ -181,9 +174,8 @@
                 <td>${bill.patient.user.name}</td>                           <%-- was bill.patientName --%>
                 <td>${bill.appointmentId}</td>                               <%-- was bill.serviceId --%>
                 <td>NPR <fmt:formatNumber value="${bill.amount}" pattern="#,##0.00" /></td>
-                <td>—</td>                                                   <%-- no method in Payment model --%>
                 <td>${bill.createdAt}</td>                                   <%-- was bill.date --%>
-                <td><span class="badge badge-paid">Paid</span></td>          <%-- no status in Payment model --%>
+                <td><span class="badge badge-paid">${not empty bill.paymentStatus ? bill.paymentStatus : 'pending'}</span></td>
 
               </tr>
             </c:forEach>
@@ -197,12 +189,12 @@
 <script>
   function updateClock() {
     const now = new Date();
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
     document.getElementById('liveClock').textContent =
-            now.toLocaleDateString('en-US', options);
+            now.toLocaleString('en-US', options);
   }
   updateClock();
-  setInterval(updateClock, 60000); // updates every minute
+  setInterval(updateClock, 30000);
 </script>
 </body>
 </html>

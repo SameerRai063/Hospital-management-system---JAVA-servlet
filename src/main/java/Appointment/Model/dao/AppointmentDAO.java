@@ -24,6 +24,7 @@ public class AppointmentDAO implements AppointmentInterface {
         appointment.setDepartment(rs.getString("department"));
 
         appointment.setAppointmentDate(rs.getDate("appointment_date"));
+        appointment.setAppointmentTime(rs.getTime("appointment_time"));
         appointment.setReason(rs.getString("reason"));
         appointment.setStatus(rs.getString("status"));
 
@@ -40,19 +41,18 @@ public class AppointmentDAO implements AppointmentInterface {
     public int addAppointment(Appointment appointment) throws Exception {
 
         String sql = "INSERT INTO appointments " +
-                "(patient_id, doctor_id, department, appointment_date,appointment_time, reason, status) " +
-                "VALUES (?, ?, ?, ?, ?, ?,?)";
+                "(patient_id, doctor_id, appointment_date, appointment_time, reason, status) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, appointment.getPatientId());
             ps.setInt(2, appointment.getDoctorId());
-            ps.setString(3, appointment.getDepartment());
-            ps.setDate(4, appointment.getAppointmentDate());
-            ps.setTime(5, appointment.getAppointmentTime());
-            ps.setString(6, appointment.getReason());
-            ps.setString(7, appointment.getStatus());
+            ps.setDate(3, appointment.getAppointmentDate());
+            ps.setTime(4, appointment.getAppointmentTime());
+            ps.setString(5, appointment.getReason());
+            ps.setString(6, appointment.getStatus());
 
             ps.executeUpdate();
 
@@ -76,15 +76,14 @@ public class AppointmentDAO implements AppointmentInterface {
                 "SELECT a.id, a.patient_id, a.doctor_id, " +
                         "pUser.name AS patient_name, " +
                         "dUser.name AS doctor_name, " +
-                        "d.department, " +
-                        "a.appointment_date, a.reason, a.status, " +
+                        "COALESCE(d.department, 'General Medicine') AS department, " +
+                        "a.appointment_date, a.appointment_time, a.reason, a.status, " +
                         "a.created_at, a.updated_at " +
                         "FROM appointments a " +
-                        "JOIN patient p ON a.patient_id = p.user_id " +
-                        "JOIN users pUser ON p.user_id = pUser.id " +
-                        "JOIN doctor d ON a.doctor_id = d.user_id " +
-                        "JOIN users dUser ON d.user_id = dUser.id " +
-                        "ORDER BY a.appointment_date DESC";
+                        "JOIN users pUser ON a.patient_id = pUser.id " +
+                        "JOIN users dUser ON a.doctor_id = dUser.id " +
+                        "LEFT JOIN doctor d ON a.doctor_id = d.user_id " +
+                        "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -110,12 +109,11 @@ public class AppointmentDAO implements AppointmentInterface {
                 "SELECT a.*, " +
                         "pUser.name AS patient_name, " +
                         "dUser.name AS doctor_name, " +
-                        "d.department " +
+                        "COALESCE(d.department, 'General Medicine') AS department " +
                         "FROM appointments a " +
-                        "JOIN patient p ON a.patient_id = p.user_id " +
-                        "JOIN users pUser ON p.user_id = pUser.id " +
-                        "JOIN doctor d ON a.doctor_id = d.user_id " +
-                        "JOIN users dUser ON d.user_id = dUser.id " +
+                        "JOIN users pUser ON a.patient_id = pUser.id " +
+                        "JOIN users dUser ON a.doctor_id = dUser.id " +
+                        "LEFT JOIN doctor d ON a.doctor_id = d.user_id " +
                         "WHERE a.patient_id = ? " +
                         "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
 
@@ -195,12 +193,11 @@ public class AppointmentDAO implements AppointmentInterface {
                 "SELECT a.*, " +
                         "pUser.name AS patient_name, " +
                         "dUser.name AS doctor_name, " +
-                        "d.department " +
-                        "FROM appointment a " +
-                        "JOIN patient p ON a.patient_id = p.user_id " +
-                        "JOIN users pUser ON p.user_id = pUser.id " +
-                        "JOIN doctor d ON a.doctor_id = d.user_id " +
-                        "JOIN users dUser ON d.user_id = dUser.id " +
+                        "COALESCE(d.department, 'General Medicine') AS department " +
+                        "FROM appointments a " +
+                        "JOIN users pUser ON a.patient_id = pUser.id " +
+                        "JOIN users dUser ON a.doctor_id = dUser.id " +
+                        "LEFT JOIN doctor d ON a.doctor_id = d.user_id " +
                         "WHERE a.patient_id = ? " +
                         "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
 
@@ -291,15 +288,44 @@ public class AppointmentDAO implements AppointmentInterface {
         String sql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND status = 'completed'";
         return runCount(sql, doctorId);
     }
+
+    // ─── Count today's appointments for a doctor ─────────────────────────────
+    public int countTodayAppointments(int doctorId) {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND DATE(appointment_date) = CURDATE()";
+        return runCount(sql, doctorId);
+    }
     public boolean updateAppointmentStatus(int appointmentId, String newStatus) {
-        String sql = "UPDATE appointments SET status = ?, updated_at = NOW() WHERE id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String appointmentSql = "UPDATE appointments SET status = ?, updated_at = NOW() WHERE id = ?";
+        String paymentSql = "UPDATE payments SET payment_status = ?, updated_at = NOW() WHERE appointment_id = ?";
 
-            ps.setString(1, newStatus);
-            ps.setInt(2, appointmentId);
-            return ps.executeUpdate() > 0;
+        try (Connection conn = DBConnection.getConnection()) {
+            boolean originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
 
+            try {
+                int updatedAppointments;
+                try (PreparedStatement ps = conn.prepareStatement(appointmentSql)) {
+                    ps.setString(1, newStatus);
+                    ps.setInt(2, appointmentId);
+                    updatedAppointments = ps.executeUpdate();
+                }
+
+                if ("completed".equalsIgnoreCase(newStatus)) {
+                    try (PreparedStatement ps = conn.prepareStatement(paymentSql)) {
+                        ps.setString(1, "completed");
+                        ps.setInt(2, appointmentId);
+                        ps.executeUpdate();
+                    }
+                }
+
+                conn.commit();
+                return updatedAppointments > 0;
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(originalAutoCommit);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -334,10 +360,12 @@ public class AppointmentDAO implements AppointmentInterface {
         String sql =
                 "SELECT a.*, " +
                         "pu.name AS patient_name, " +
-                        "du.name AS doctor_name " +
+                        "du.name AS doctor_name, " +
+                        "COALESCE(d.department, 'General Medicine') AS department " +
                         "FROM appointments a " +
                         "JOIN users pu ON a.patient_id = pu.id " +
                         "JOIN users du ON a.doctor_id = du.id " +
+                        "LEFT JOIN doctor d ON a.doctor_id = d.user_id " +
                         "WHERE a.id = ?";
 
         try (

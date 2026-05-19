@@ -11,6 +11,8 @@ import Appointment.Model.Appointment;
 import Appointment.Model.dao.AppointmentDAO;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @WebServlet("/appointments")
@@ -56,6 +58,7 @@ public class AppointmentServlet extends HttpServlet {
             request.setAttribute("totalAppointments", stats[0]);
             request.setAttribute("appointmentsToday", stats[1]);
             request.setAttribute("completedAppointments", stats[2]);
+            request.setAttribute("currentDate", LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")));
 
             // =========================
             // 3. FORWARD TO JSP

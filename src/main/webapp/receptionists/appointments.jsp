@@ -64,6 +64,14 @@
     .topbar { height: 64px; background-color: white; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
     .topbar-left { display: flex; gap: 12px; font-size: 16px; font-weight: 600; color: var(--primary-teal); }
     .topbar-left .date { font-size: 13px; color: var(--text-gray); font-weight: 400; }
+    .header-actions { display: flex; align-items: center; gap: 14px; }
+    .notification-btn { position: relative; width: 44px; height: 44px; border-radius: 50%; background: #f8fafc; color: #64748b; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+    .notification-dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+    .header-profile { display: flex; align-items: center; gap: 12px; border-left: 1px solid var(--border-color); padding-left: 20px; }
+    .header-name { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+    .profile-btn { width: 40px; height: 40px; border-radius: 50%; background: #dbeafe; color: var(--primary-blue); display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+    .logout-btn { display: inline-flex; align-items: center; gap: 8px; background: #0f172a; color: white; text-decoration: none; border-radius: 999px; padding: 10px 18px; font-size: 14px; font-weight: 700; }
+    .logout-btn:hover { background: #334155; }
     .top-search { display: flex; align-items: center; background-color: #f3f4f6; border-radius: 20px; padding: 8px 16px; width: 400px; }
     .top-search input { border: none; background: transparent; outline: none; width: 100%; margin-left: 8px; font-size: 13px;}
     .btn-support { background-color: #f0fdf4; color: var(--primary-teal); border: 1px solid #bbf7d0; border-radius: 20px; padding: 6px 16px; font-size: 13px; cursor: pointer; }
@@ -80,10 +88,10 @@
     .stat-info .value { font-size: 28px; font-weight: 700; color: #111827; }
 
     /* Table */
-    .table-container { background-color: white; border: 1px solid var(--border-color); border-radius: 12px; overflow:hidden;}
-    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .data-table th { background-color: var(--table-header-bg); padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--table-header-text); text-transform: uppercase; }
-    .data-table td { padding: 16px 24px; font-size: 14px; border-bottom: 1px solid var(--border-color); }
+    .table-container { background-color: white; border: 1px solid var(--border-color); border-radius: 12px; overflow-x:auto; max-width: 100%;}
+    .data-table { width: 100%; min-width: 980px; border-collapse: collapse; text-align: left; }
+    .data-table th { background-color: var(--table-header-bg); padding: 14px 18px; font-size: 12px; font-weight: 700; color: var(--table-header-text); text-transform: uppercase; white-space: nowrap; }
+    .data-table td { padding: 14px 18px; font-size: 14px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
     .empty-state { text-align: center; padding: 40px !important; color: var(--text-gray); }
 
     /* Floating Action Button */
@@ -92,6 +100,16 @@
     /* Action Icons */
     .action-icon { margin-right: 12px; font-size: 16px; cursor: pointer; color: var(--text-gray); }
     .action-icon:hover { color: var(--primary-teal); }
+
+    /* Modal Styles */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999; align-items: center; justify-content: center; padding: 24px; }
+    .modal-content { background: white; width: 540px; max-width: 100%; border-radius: 12px; padding: 28px 32px; position: relative; box-shadow: 0 12px 30px rgba(2,6,23,0.35); }
+    .modal-close { position: absolute; top: 12px; right: 12px; border: none; background: transparent; font-size: 20px; cursor: pointer; color: #111827; }
+    .modal-title { margin-bottom: 18px; color: var(--primary-blue); font-size: 22px; font-weight: 700; }
+    .modal-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .modal-row strong { width: 110px; display: inline-block; color: #111827; }
+    .modal-row span { color: #111827; }
+    @media (max-width: 640px) { .modal-content { padding: 20px; width: 100%; } .modal-row strong { width: 100px; } }
   </style>
 </head>
 <body>
@@ -111,6 +129,9 @@
       <li class="nav-item active">
         <a href="${pageContext.request.contextPath}/receptionists/appointments" class="nav-link">
           <i class="fa-regular fa-calendar"></i> Appointments</a></li>
+      <li class="nav-item">
+        <a href="<%= request.getContextPath() %>/chat" class="nav-link">
+          <i class="fa-regular fa-comments"></i> Chat</a></li>
 
 
     </ul>
@@ -118,8 +139,8 @@
   <div class="user-profile">
     <div class="avatar">${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
     <div class="user-info">
-      <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Samir'}</h4>
-      <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : 'Super Admin'}</p>
+      <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : ''}</h4>
+      <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : ''}</p>
     </div>
   </div>
 </aside>
@@ -128,11 +149,21 @@
   <header class="topbar">
     <div class="topbar-left">
       Appointments <span style="color:#d1d5db;">|</span>
-      <span class="date">${not empty currentDate ? currentDate : 'May 1, 2026'}</span>
+      <span class="date">${currentDate}</span>
     </div>
 
-    <div class="topbar-right">
-      <button class="btn-support">Support</button>
+    <div class="header-actions">
+      <a href="<%= request.getContextPath() %>/notifications.jsp" class="notification-btn" aria-label="Notifications">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notification-dot"></span>
+      </a>
+      <div class="header-profile">
+        <span class="header-name">${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Receptionist'}</span>
+        <a href="#" class="profile-btn" aria-label="Profile"><i class="fa-regular fa-circle-user"></i></a>
+      </div>
+      <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+      </a>
     </div>
   </header>
 
@@ -172,6 +203,7 @@
           <th>DOCTOR</th>
           <th>DEPARTMENT</th>
           <th>DATE</th>
+          <th>TIME</th>
           <th>STATUS</th>
           <th>ACTIONS</th>
         </tr>
@@ -180,7 +212,7 @@
         <c:choose>
           <c:when test="${empty appointmentList}">
             <tr>
-              <td colspan="7" class="empty-state">No appointments found</td>
+              <td colspan="8" class="empty-state">No appointments found</td>
             </tr>
           </c:when>
           <c:otherwise>
@@ -191,6 +223,7 @@
                 <td>${appointment.doctorName}</td>
                 <td>${appointment.department}</td>
                 <td>${appointment.appointmentDate}</td>
+                <td>${appointment.formattedAppointmentTime}</td>
                 <td>${appointment.status}</td>
                 <td>
                   <button
@@ -202,14 +235,14 @@
                                   '${appointment.doctorName}',
                                   '${appointment.department}',
                                   '${appointment.appointmentDate}',
-                                  '${appointment.appointmentTime}',
+                                  '${appointment.formattedAppointmentTime}',
                                   '${appointment.status}',
                                   '${appointment.reason}'
                                   )">
                     View
                   </button>
 
-                  <a href="${pageContext.request.contextPath}/deleteAppointment?id=${appointment.id}"
+                  <a href="${pageContext.request.contextPath}/receptionists/deleteAppointment?id=${appointment.id}"
                      class="btn-delete"
                      onclick="return confirm('Are you sure you want to delete appointment ID ${appointment.id}? This action cannot be undone.');">
                     Delete
@@ -227,87 +260,20 @@
   </main>
 </div>
 <!-- VIEW APPOINTMENT MODAL -->
-<div id="appointmentModal"
-     style="display:none;
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
-            background:rgba(0,0,0,0.5);
-            z-index:9999;
-            justify-content:center;
-            align-items:center;">
+<div id="appointmentModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="appointmentTitle">
+    <button class="modal-close" onclick="closeAppointmentModal()" aria-label="Close modal">×</button>
+    <h2 id="appointmentTitle" class="modal-title">Appointment Details</h2>
 
-  <div style="
-        background:white;
-        width:500px;
-        max-width:90%;
-        border-radius:12px;
-        padding:30px;
-        position:relative;
-        box-shadow:0 10px 30px rgba(0,0,0,0.2);
-    ">
-
-    <button onclick="closeAppointmentModal()"
-            style="
-                    position:absolute;
-                    top:15px;
-                    right:15px;
-                    border:none;
-                    background:none;
-                    font-size:20px;
-                    cursor:pointer;
-                ">
-      ×
-    </button>
-
-    <h2 style="margin-bottom:20px;color:#2554ff;">
-      Appointment Details
-    </h2>
-
-    <div style="display:flex;flex-direction:column;gap:14px;">
-
-      <div>
-        <strong>ID:</strong>
-        <span id="modalAppointmentId"></span>
-      </div>
-
-      <div>
-        <strong>Patient:</strong>
-        <span id="modalPatientName"></span>
-      </div>
-
-      <div>
-        <strong>Doctor:</strong>
-        <span id="modalDoctorName"></span>
-      </div>
-
-      <div>
-        <strong>Department:</strong>
-        <span id="modalDepartment"></span>
-      </div>
-
-      <div>
-        <strong>Date:</strong>
-        <span id="modalDate"></span>
-      </div>
-
-      <div>
-        <strong>Time:</strong>
-        <span id="modalTime"></span>
-      </div>
-
-      <div>
-        <strong>Status:</strong>
-        <span id="modalStatus"></span>
-      </div>
-
-      <div>
-        <strong>Reason:</strong>
-        <span id="modalReason"></span>
-      </div>
-
+    <div>
+      <div class="modal-row"><strong>ID:</strong><span id="modalAppointmentId"></span></div>
+      <div class="modal-row"><strong>Patient:</strong><span id="modalPatientName"></span></div>
+      <div class="modal-row"><strong>Doctor:</strong><span id="modalDoctorName"></span></div>
+      <div class="modal-row"><strong>Department:</strong><span id="modalDepartment"></span></div>
+      <div class="modal-row"><strong>Date:</strong><span id="modalDate"></span></div>
+      <div class="modal-row"><strong>Time:</strong><span id="modalTime"></span></div>
+      <div class="modal-row"><strong>Status:</strong><span id="modalStatus"></span></div>
+      <div class="modal-row"><strong>Reason:</strong><span id="modalReason"></span></div>
     </div>
   </div>
 </div>
@@ -332,11 +298,18 @@
     document.getElementById("modalStatus").innerText = status;
     document.getElementById("modalReason").innerText = reason;
 
-    document.getElementById("appointmentModal").style.display = "flex";
+    var modal = document.getElementById("appointmentModal");
+    modal.style.display = "flex";
+    modal.setAttribute('aria-hidden','false');
+    // prevent background scroll
+    document.body.style.overflow = 'hidden';
   }
 
   function closeAppointmentModal() {
-    document.getElementById("appointmentModal").style.display = "none";
+    var modal = document.getElementById("appointmentModal");
+    modal.style.display = "none";
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
   }
 
   window.onclick = function(event) {

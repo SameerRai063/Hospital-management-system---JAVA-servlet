@@ -7,13 +7,13 @@ import jakarta.servlet.annotation.MultipartConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.Date;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-import utils.DBConnection;
 import User.Model.User;
 import Receptionist.Model.Receptionist;
-import Receptionist.Model.dao.ReceptionistDAO;
+import utils.UserService;
 
 @WebServlet("/add-receptionist")
 @MultipartConfig(
@@ -29,8 +29,6 @@ public class addReceptionistServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        Connection con = null;
         try {
             // 1. Process Profile Image
             String fileName = "default_receptionist.png";
@@ -44,19 +42,21 @@ public class addReceptionistServlet extends HttpServlet {
                 String uploadFilePath = applicationPath + File.separator + UPLOAD_DIR;
 
                 File fileSaveDir = new File(uploadFilePath);
-                if (!fileSaveDir.exists()) fileSaveDir.mkdirs();
+                if (!fileSaveDir.exists() && !fileSaveDir.mkdirs()) {
+                    throw new IOException("Unable to create receptionist upload directory.");
+                }
 
                 filePart.write(uploadFilePath + File.separator + fileName);
             }
 
             // 2. Map User Details
             User user = new User();
-            user.setName(request.getParameter("name"));
-            user.setEmail(request.getParameter("email"));
-            user.setPassword(request.getParameter("password"));
-            user.setPhone(request.getParameter("phone"));
-            user.setGender(request.getParameter("gender"));
-            user.setAddress(request.getParameter("address"));
+            user.setName(request.getParameter("name") != null ? request.getParameter("name").trim() : null);
+            user.setEmail(request.getParameter("email") != null ? request.getParameter("email").trim() : null);
+            user.setPassword(request.getParameter("password") != null ? request.getParameter("password").trim() : null);
+            user.setPhone(request.getParameter("phone") != null ? request.getParameter("phone").trim() : null);
+            user.setGender(request.getParameter("gender") != null ? request.getParameter("gender").trim() : null);
+            user.setAddress(request.getParameter("address") != null ? request.getParameter("address").trim() : null);
             user.setProfileImage(fileName);
             user.setRole("receptionist"); // Explicitly setting the role
 
@@ -70,24 +70,23 @@ public class addReceptionistServlet extends HttpServlet {
             receptionist.setUser(user);
             receptionist.setStatus(request.getParameter("status"));
 
-            // 4. Database Transaction
-            con = DBConnection.getConnection();
-            ReceptionistDAO receptionistDAO = new ReceptionistDAO(con);
-
-            boolean success = receptionistDAO.addReceptionist(receptionist);
+            // 4. Database transaction via Hibernate
+            UserService userService = new UserService();
+            int userId = userService.createReceptionist(user, receptionist);
 
             // 5. Success/Error Handling
-            if (success) {
-                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?success=1");
+            if (userId > 0) {
+                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?success=receptionist_added");
             } else {
-                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=failed");
+                response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=receptionist_failed");
             }
 
+        } catch (IllegalArgumentException e) {
+            String message = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=validation&message=" + message);
         } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=exception");
-        } finally {
-            try { if (con != null) con.close(); } catch (Exception ignore) {}
+            String message = URLEncoder.encode(e.getMessage() != null ? e.getMessage() : "Unable to save receptionist.", StandardCharsets.UTF_8);
+            response.sendRedirect(request.getContextPath() + "/Admin-dashboard?error=exception&message=" + message);
         }
     }
 }

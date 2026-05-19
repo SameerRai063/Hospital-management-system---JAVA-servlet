@@ -14,8 +14,9 @@
       theme: {
         extend: {
           colors: {
-            "brand-blue": "#0052FF", "mint": "#70C1B3",
-            "pending-blue": "#3b82f6", "outstanding-orange": "#f59e0b",
+            // softened palette for better contrast and cohesion
+            "brand-blue": "#0B63D6", "mint": "#2DD4BF",
+            "pending-blue": "#2563EB", "outstanding-orange": "#f59e0b",
           },
           fontFamily: { "display": ["Inter","sans-serif"], "sans": ["Inter","sans-serif"] },
           borderRadius: { "DEFAULT":"0.25rem","lg":"0.5rem","xl":"1rem","2xl":"1.5rem" },
@@ -61,25 +62,36 @@
 
     </nav>
 
-    <!-- Profile -->
-    <div class="mt-auto p-8 border-t border-white/10">
-      <form method="post" action="<%= request.getContextPath() %>/login.jsp" style="margin:0">
-        <button type="submit"
-                class="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-4 py-3 rounded-xl transition-all">
-          <span class="material-symbols-outlined text-[20px]">logout</span>
-          Logout
-        </button>
-      </form>
-    </div>
+    <div class="mt-auto p-8 border-t border-white/10"></div>
   </aside>
 
   <!-- ═══════════════ MAIN ═══════════════ -->
   <main class="flex-1 flex flex-col overflow-hidden">
 
-    <header class="h-20 shrink-0 px-10 flex items-center border-b border-slate-100">
+    <header class="h-16 shrink-0 px-10 flex items-center justify-between bg-white border-b border-slate-100">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900">Welcome back, Doctor</h1>
-        <p class="text-sm text-slate-500" id="dash-date"></p>
+        <h1 class="text-xl font-bold text-slate-900">Dashboard</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="<%= request.getContextPath() %>/notifications.jsp"
+           class="relative inline-flex size-11 items-center justify-center rounded-full bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-[#0052FF] transition-colors"
+           aria-label="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute right-2 top-2 size-2 rounded-full bg-red-500"></span>
+        </a>
+        <div class="flex items-center gap-3 border-l border-slate-200 pl-5">
+          <span class="text-sm font-bold text-slate-900">${sessionScope.userName}</span>
+          <a href="#"
+             class="inline-flex size-10 items-center justify-center rounded-full bg-blue-100 text-[#0052FF] hover:bg-blue-200 transition-colors"
+             aria-label="Profile">
+            <span class="material-symbols-outlined text-3xl">account_circle</span>
+          </a>
+        </div>
+        <a href="<%= request.getContextPath() %>/logout"
+           class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+          <span class="material-symbols-outlined text-[20px]">logout</span>
+          Logout
+        </a>
       </div>
     </header>
 
@@ -90,35 +102,35 @@
         <div class="mb-6">
           <h2 class="text-lg font-bold text-slate-800">Health Summary</h2>
         </div>
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          <div class="bg-brand-blue p-6 rounded-2xl shadow-lg shadow-brand-blue/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform cursor-pointer">
-            <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
+          <div class="bg-brand-blue p-6 rounded-2xl shadow-lg ring-1 ring-white/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform cursor-pointer">
+            <div class="bg-white/95 size-12 rounded-xl flex items-center justify-center text-brand-blue font-bold">
               <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">calendar_month</span>
             </div>
             <div>
-              <p class="text-white/80 text-xs font-medium mb-1">Total Appointments</p>
-              <p class="text-lg font-bold leading-tight">${totalAppts}</p>
+              <p class="text-slate-100 text-xs font-medium mb-1">Total Appointments</p>
+              <p class="text-2xl font-extrabold leading-tight">${totalAppts}</p>
             </div>
           </div>
 
-          <div class="bg-mint p-6 rounded-2xl shadow-lg shadow-mint/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform cursor-pointer">
-            <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
+          <div class="bg-mint p-6 rounded-2xl shadow-lg ring-1 ring-white/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform cursor-pointer">
+            <div class="bg-white/95 size-12 rounded-xl flex items-center justify-center text-[10px] font-bold text-brand-blue">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">schedule</span>
+            </div>
+            <div>
+              <p class="text-slate-900 text-xs font-medium mb-1">Scheduled</p>
+              <p class="text-2xl font-extrabold leading-tight">${scheduledCount}</p>
+            </div>
+          </div>
+
+          <div class="bg-pending-blue p-6 rounded-2xl shadow-lg ring-1 ring-white/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform cursor-pointer">
+            <div class="bg-white/95 size-12 rounded-xl flex items-center justify-center text-pending-blue font-bold">
               <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">check_circle</span>
             </div>
             <div>
-              <p class="text-white/80 text-xs font-medium mb-1">Completed</p>
-              <p class="text-lg font-bold leading-tight">${completedCount}</p>
-            </div>
-          </div>
-
-          <div class="bg-pending-blue p-6 rounded-2xl shadow-lg shadow-blue-500/10 flex flex-col justify-between h-44 text-white hover:-translate-y-1 transition-transform cursor-pointer">
-            <div class="bg-white/20 size-12 rounded-xl flex items-center justify-center">
-              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">event_available</span>
-            </div>
-            <div>
-              <p class="text-white/80 text-xs font-medium mb-1">Scheduled</p>
-              <p class="text-lg font-bold leading-tight">${scheduledCount}</p>
+              <p class="text-slate-100 text-xs font-medium mb-1">Completed</p>
+              <p class="text-2xl font-extrabold leading-tight">${completedCount}</p>
             </div>
           </div>
 
@@ -129,15 +141,5 @@
   </main>
 </div>
 
-<script>
-  (function () {
-    var days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    var months = ['January','February','March','April','May','June',
-      'July','August','September','October','November','December'];
-    var now = new Date();
-    document.getElementById('dash-date').textContent =
-            days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
-  })();
-</script>
 </body>
 </html>

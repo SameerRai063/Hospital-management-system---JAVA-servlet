@@ -4,7 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
   String userName    = (session.getAttribute("userName") != null) ? (String) session.getAttribute("userName") : "Admin";
-  String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "Super Admin";
+  String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "";
   String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
   int    totalDoctors       = (request.getAttribute("totalDoctors")       != null) ? (Integer) request.getAttribute("totalDoctors")       : 0;
@@ -158,8 +158,8 @@
     <div class="user-profile">
       <div class="avatar">${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
       <div class="user-info">
-        <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Samir'}</h4>
-        <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : 'Super Admin'}</p>
+        <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : ''}</h4>
+        <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : ''}</p>
       </div>
     </div>
   </div>
@@ -273,7 +273,7 @@
                     View
                   </button>
 
-                  <a href="deleteReceptionist?id=${receptionist.user.id}" class="btn-delete" onclick="return confirm('Delete this receptionist? This action cannot be undone.');">
+                  <a href="${pageContext.request.contextPath}/deleteReceptionist?id=${receptionist.user.id}" class="btn-delete" onclick="return confirm('Delete this receptionist? This action cannot be undone.');">
                     Delete
                   </a>
                 </td>

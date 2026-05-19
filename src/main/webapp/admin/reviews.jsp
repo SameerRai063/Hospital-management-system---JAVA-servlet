@@ -4,7 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     String userName = (session.getAttribute("userName") != null) ? String.valueOf(session.getAttribute("userName")) : "Admin";
-    String userRole = (session.getAttribute("userRole") != null) ? String.valueOf(session.getAttribute("userRole")) : "Super Admin";
+    String userRole = (session.getAttribute("userRole") != null) ? String.valueOf(session.getAttribute("userRole")) : "";
     String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
     int totalReviews = 0;
@@ -138,8 +138,8 @@
         <div class="user-profile">
             <div class="avatar">${(not empty sessionScope.loggedInUser and not empty sessionScope.loggedInUser.name) ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
             <div class="user-info">
-                <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Samir'}</h4>
-                <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : 'Super Admin'}</p>
+                <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : ''}</h4>
+                <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : ''}</p>
             </div>
         </div>
     </div>
@@ -168,14 +168,14 @@
                 <div class="stat-icon yellow"><i class="fa-solid fa-star"></i></div>
                 <div class="stat-info">
                     <p>Average Rating</p>
-                    <h3><%= averageRating > 0 ? String.format("%.1f", averageRating) : "4.8" %> / 5.0</h3>
+                    <h3><%= String.format("%.1f", averageRating) %> / 5.0</h3>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green"><i class="fa-solid fa-comment-medical"></i></div>
                 <div class="stat-info">
                     <p>Total Reviews</p>
-                    <h3><%= totalReviews > 0 ? totalReviews : "342" %></h3>
+                    <h3><%= totalReviews %></h3>
                 </div>
             </div>
         </div>
@@ -196,21 +196,7 @@
                 <c:choose>
                     <c:when test="${empty reviewList}">
                         <tr>
-                            <td>Oct 12, 2023</td>
-                            <td><strong>Rahul Sharma</strong></td>
-                            <td>101</td>
-                            <td>
-                                <div class="stars">
-                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star inactive"></i>
-                                </div>
-                            </td>
-                            <td><p class="review-text">Great consultation, but had to wait 20 minutes past my appointment time.</p></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-view"><i class="fa-solid fa-reply"></i> Reply</button>
-                                    <button class="btn-delete"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
+                            <td colspan="6" style="text-align: center; color: var(--text-gray);">No reviews found.</td>
                         </tr>
                     </c:when>
                     <c:otherwise>

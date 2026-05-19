@@ -4,7 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     String userName    = (session.getAttribute("userName") != null) ? (String) session.getAttribute("userName") : "Admin";
-    String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "Super Admin";
+    String userRole    = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "";
     String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
     int    totalDoctors       = (request.getAttribute("totalDoctors")       != null) ? (Integer) request.getAttribute("totalDoctors")       : 0;
@@ -374,8 +374,8 @@
         <div class="user-profile">
             <div class="avatar">${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
             <div class="user-info">
-                <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Samir'}</h4>
-                <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : 'Super Admin'}</p>
+                <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : ''}</h4>
+                <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : ''}</p>
             </div>
         </div>
     </div>
@@ -431,7 +431,6 @@
                 <tr>
                     <th>PATIENT ID</th>
                     <th>NAME</th>
-                    <th>AGE</th>
                     <th>GENDER</th>
                     <th>PHONE</th>
                     <th>BLOOD GROUP</th>
@@ -442,20 +441,14 @@
                 <c:choose>
                     <c:when test="${empty patientList}">
                         <tr>
-                            <td colspan="7" class="empty-state">No patients found.</td>
+                            <td colspan="6" class="empty-state">No patients found.</td>
                         </tr>
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="patient" items="${patientList}">
-                            <%-- Compute age --%>
-                            <c:set var="age" value="--" />
-                            <c:if test="${not empty patient.user.dob}">
-                                <c:set var="age" value="${2026 - patient.user.dob.year - 1900}" />
-                            </c:if>
                             <tr>
                                 <td>${patient.user.id}</td>
                                 <td>${patient.user.name}</td>
-                                <td>${age}</td>
                                 <td>${patient.user.gender}</td>
                                 <td>${patient.user.phone}</td>
                                 <td>${patient.bloodGroup}</td>
@@ -467,7 +460,6 @@
                                                         id:           '${patient.user.id}',
                                                         name:         '${patient.user.name}',
                                                         gender:       '${patient.user.gender}',
-                                                        age:          '${age}',
                                                         dob:          '${patient.user.dob}',
                                                         phone:        '${patient.user.phone}',
                                                         email:        '${patient.user.email}',

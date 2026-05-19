@@ -1,20 +1,58 @@
 package Consultation.Model;
 
+import Appointment.Model.Appointment;
+import Doctor.Model.Doctor;
+import Patient.Model.Patient;
+import jakarta.persistence.*;
 import java.sql.Timestamp;
 
+@Entity
+@Table(name = "consultations")
 public class Consultation {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "appointment_id", nullable = false)
     private int appointmentId;
+
+    @Column(name = "doctor_id", nullable = false)
     private int doctorId;
+
+    @Column(name = "patient_id", nullable = false)
     private int patientId;
 
+    @Column(name = "clinic_diagnosis", columnDefinition = "TEXT")
     private String clinicDiagnosis;
+
+    @Column(name = "medicine_names", columnDefinition = "TEXT")
     private String medicineNames;
+
+    @Column(name = "dosage")
     private String dosage;
+
+    @Column(name = "duration")
     private String duration;
+
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private Timestamp createdAt;
+
+    // Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment_id", insertable = false, updatable = false)
+    private Appointment appointment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id", insertable = false, updatable = false)
+    private Doctor doctor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id", insertable = false, updatable = false)
+    private Patient patient;
 
     // Constructors
     public Consultation() {}
@@ -22,7 +60,6 @@ public class Consultation {
     public Consultation(int appointmentId, int doctorId, int patientId,
                         String clinicDiagnosis, String medicineNames,
                         String dosage, String duration, String notes) {
-
         this.appointmentId = appointmentId;
         this.doctorId = doctorId;
         this.patientId = patientId;
@@ -64,4 +101,13 @@ public class Consultation {
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public Appointment getAppointment() { return appointment; }
+    public void setAppointment(Appointment appointment) { this.appointment = appointment; }
+
+    public Doctor getDoctor() { return doctor; }
+    public void setDoctor(Doctor doctor) { this.doctor = doctor; }
+
+    public Patient getPatient() { return patient; }
+    public void setPatient(Patient patient) { this.patient = patient; }
 }

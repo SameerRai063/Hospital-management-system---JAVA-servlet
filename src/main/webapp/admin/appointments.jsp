@@ -66,7 +66,6 @@
     .topbar-left .date { font-size: 13px; color: var(--text-gray); font-weight: 400; }
     .top-search { display: flex; align-items: center; background-color: #f3f4f6; border-radius: 20px; padding: 8px 16px; width: 400px; }
     .top-search input { border: none; background: transparent; outline: none; width: 100%; margin-left: 8px; font-size: 13px;}
-    .btn-support { background-color: #f0fdf4; color: var(--primary-teal); border: 1px solid #bbf7d0; border-radius: 20px; padding: 6px 16px; font-size: 13px; cursor: pointer; }
 
     .content { padding: 32px; overflow-y: auto; background-color: #fdfdfd; flex: 1; position: relative; }
     .page-header { margin-bottom: 24px; }
@@ -74,7 +73,7 @@
     .page-header p { font-size: 14px; color: var(--text-gray); margin-top: 4px; }
 
     /* Stats Grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
     .stat-card { background-color: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
     .stat-info h3 { font-size: 12px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; margin-bottom: 12px; }
     .stat-info .value { font-size: 28px; font-weight: 700; color: #111827; }
@@ -85,9 +84,6 @@
     .data-table th { background-color: var(--table-header-bg); padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--table-header-text); text-transform: uppercase; }
     .data-table td { padding: 16px 24px; font-size: 14px; border-bottom: 1px solid var(--border-color); }
     .empty-state { text-align: center; padding: 40px !important; color: var(--text-gray); }
-
-    /* Floating Action Button */
-    .fab { position: absolute; bottom: 40px; right: 40px; width: 56px; height: 56px; background-color: var(--primary-teal); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 12px rgba(13, 127, 107, 0.3); cursor: pointer; border: none; }
 
     /* Action Icons */
     .action-icon { margin-right: 12px; font-size: 16px; cursor: pointer; color: var(--text-gray); }
@@ -127,8 +123,8 @@
   <div class="user-profile">
     <div class="avatar">${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name.substring(0,1) : 'S'}</div>
     <div class="user-info">
-      <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : 'Samir'}</h4>
-      <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : 'Super Admin'}</p>
+      <h4>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.name : ''}</h4>
+      <p>${not empty sessionScope.loggedInUser ? sessionScope.loggedInUser.role : ''}</p>
     </div>
   </div>
 </aside>
@@ -137,12 +133,10 @@
   <header class="topbar">
     <div class="topbar-left">
       Appointments <span style="color:#d1d5db;">|</span>
-      <span class="date">${not empty currentDate ? currentDate : 'May 1, 2026'}</span>
+      <span class="date">${currentDate}</span>
     </div>
 
-    <div class="topbar-right">
-      <button class="btn-support">Support</button>
-    </div>
+    <div class="topbar-right"></div>
   </header>
 
   <main class="content">
@@ -156,12 +150,6 @@
         <div class="stat-info">
           <h3>TOTAL APPOINTMENTS</h3>
           <div class="value">${not empty totalAppointments ? totalAppointments : 0}</div>
-        </div>
-      </div>
-      <div class="stat-card" style="background: #f0fdfa;">
-        <div class="stat-info">
-          <h3>APPOINTMENTS TODAY</h3>
-          <div class="value">${not empty appointmentsToday ? appointmentsToday : 0}</div>
         </div>
       </div>
       <div class="stat-card" style="background: #f0fdf4;">
@@ -211,7 +199,7 @@
                                   '${appointment.doctorName}',
                                   '${appointment.department}',
                                   '${appointment.appointmentDate}',
-                                  '${appointment.appointmentTime}',
+                                  '${appointment.formattedAppointmentTime}',
                                   '${appointment.status}',
                                   '${appointment.reason}'
                                   )">
@@ -232,7 +220,6 @@
       </table>
     </div>
 
-    <button class="fab" onclick="window.location.href='addAppointment.jsp'"><i class="fa-solid fa-plus"></i></button>
   </main>
 </div>
 <!-- VIEW APPOINTMENT MODAL -->

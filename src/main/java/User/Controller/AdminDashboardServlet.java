@@ -4,6 +4,7 @@ import Doctor.Model.dao.DoctorDAO;
 import Patient.Model.dao.PatientDAO;
 import Receptionist.Model.dao.ReceptionistDAO;
 import Payment.Model.dao.PaymentDAO;
+import utils.DashboardActivityService;
 import utils.DBConnection;
 
 import jakarta.servlet.*;
@@ -22,7 +23,7 @@ public class AdminDashboardServlet extends HttpServlet {
         // Guard — redirect to login if no active session
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("loggedInUser") == null) {
-
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
@@ -48,6 +49,7 @@ public class AdminDashboardServlet extends HttpServlet {
             request.setAttribute("totalPatients",      totalPatients);
             request.setAttribute("totalReceptionists", totalReceptionists);
             request.setAttribute("totalRevenue",       totalRevenue);
+            DashboardActivityService.attachRecentActivity(con, request);
 
             // Forward to dashboard JSP
             RequestDispatcher rd = request.getRequestDispatcher("/admin/dashboard.jsp");

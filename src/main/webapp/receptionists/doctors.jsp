@@ -5,7 +5,7 @@
 <%@ page import="Doctor.Model.Doctor" %>
 <%
   String userName = (session.getAttribute("userName") != null) ? (String) session.getAttribute("userName") : "Admin";
-  String userRole = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "Super Admin";
+  String userRole = (session.getAttribute("userRole") != null) ? (String) session.getAttribute("userRole") : "";
   String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
 
   int totalDoctors = (request.getAttribute("totalDoctors") != null) ? (Integer) request.getAttribute("totalDoctors") : 0;
@@ -92,6 +92,8 @@
     .top-search input::placeholder { color: #9ca3af; }
     .topbar-right { display: flex; align-items: center; gap: 20px; }
     .top-icon { font-size: 18px; color: var(--text-gray); cursor: pointer; }
+    .top-icon-link { position: relative; color: var(--text-gray); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .notification-dot { position: absolute; top: -3px; right: -4px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
     .btn-support { background-color: #f0fdf4; color: var(--primary-teal); border: 1px solid #bbf7d0; border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; }
 
     /* --- Content & Stats Styles --- */
@@ -190,6 +192,11 @@
           <i class="fa-regular fa-calendar"></i> Appointments
         </a>
       </li>
+      <li class="nav-item">
+        <a href="<%= request.getContextPath() %>/chat" class="nav-link">
+          <i class="fa-regular fa-comments"></i> Chat
+        </a>
+      </li>
     </ul>
   </div>
 
@@ -220,13 +227,16 @@
       <span class="date"><%= currentDate %></span>
     </div>
     <div class="topbar-center">
-      <div class="top-search">
+      <form action="<%= request.getContextPath() %>/receptionists/doctors" method="GET" class="top-search">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Search patients, records, or doctors...">
-      </div>
+        <input type="text" name="search" placeholder="Search doctors by name, ID, department, email, phone..." value="${search}">
+      </form>
     </div>
     <div class="topbar-right">
-      <i class="fa-regular fa-bell top-icon"></i>
+      <a href="<%= request.getContextPath() %>/notifications.jsp" class="top-icon-link" aria-label="Notifications">
+        <i class="fa-regular fa-bell top-icon"></i>
+        <span class="notification-dot"></span>
+      </a>
       <i class="fa-regular fa-circle-question top-icon"></i>
       <button class="btn-support">Support</button>
     </div>
@@ -335,7 +345,7 @@
             <%
             } else {
             %>
-            <span style="background:#e5e7eb;color:#374151;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">Unknown</span>
+            <span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;"><%= (status == null || status.trim().isEmpty()) ? "Active" : status %></span>
             <%
               }
             %>

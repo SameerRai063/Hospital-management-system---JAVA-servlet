@@ -139,10 +139,10 @@
             ${hospitalName}
         </div>
         <div class="flex gap-3">
-            <a href="login.jsp" class="inline-block text-center bg-white text-[#2F4156] border-2 border-[#2F4156] font-semibold px-7 py-3 rounded-full hover:bg-[#e8edf2] active:bg-[#d0d9e3] transition-colors shadow-sm text-lg">
+            <a href="${pageContext.request.contextPath}/login.jsp" class="inline-block text-center bg-white text-[#2F4156] border-2 border-[#2F4156] font-semibold px-7 py-3 rounded-full hover:bg-[#e8edf2] active:bg-[#d0d9e3] transition-colors shadow-sm text-lg">
                 Login
             </a>
-            <a href="register.jsp" class="inline-block text-center bg-[#2F4156] text-white font-semibold px-7 py-3 rounded-full hover:bg-[#1e2e3d] active:bg-[#131f2a] transition-colors shadow-lg text-lg">
+            <a href="${pageContext.request.contextPath}/register.jsp" class="inline-block text-center bg-[#2F4156] text-white font-semibold px-7 py-3 rounded-full hover:bg-[#1e2e3d] active:bg-[#131f2a] transition-colors shadow-lg text-lg">
                 Create an Account
             </a>
         </div>
@@ -162,9 +162,9 @@
                 A modern hospital management system designed to streamline patient records, simplify scheduling, and enhance clinical workflows.
             </p>
             <div class="mt-2">
-                <button class="bg-secondary text-on-primary font-button text-button px-8 py-3 rounded-full hover:brightness-110 transition-all shadow-md shadow-secondary/20">
+                <a href="${pageContext.request.contextPath}/login.jsp" class="inline-block bg-secondary text-on-primary font-button text-button px-8 py-3 rounded-full hover:brightness-110 transition-all shadow-md shadow-secondary/20">
                     Book an Appointment
-                </button>
+                </a>
             </div>
         </div>
         <div class="flex-1 w-full h-[380px] relative rounded-xl overflow-hidden shadow-sm shadow-primary-container/5 bg-surface-container-low flex items-center justify-center">

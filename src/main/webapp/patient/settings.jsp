@@ -93,7 +93,7 @@
             <p class="text-[10px] uppercase tracking-widest text-white/60 font-bold">Patient Portal</p>
         </div>
         <nav class="flex-1 flex flex-col gap-1">
-            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3" href="dashboard.jsp">
+            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3" href="${pageContext.request.contextPath}/patient/dashboard.jsp">
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="text-sm font-medium">Dashboard</span>
             </a>
@@ -103,10 +103,15 @@
                 <span class="text-sm font-medium">Appointments</span>
             </a>
 
-            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
+            <a class="bg-white text-[#0052FF] rounded-full mx-4 px-4 py-3 font-semibold transition-all duration-200 flex items-center gap-3 shadow-lg shadow-black/10"
                href="${pageContext.request.contextPath}/patientProfile">
                 <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">settings</span>
                 <span class="text-sm font-medium">Settings</span>
+            </a>
+            <a class="text-white/70 hover:text-white mx-4 px-4 py-3 transition-all duration-200 hover:bg-white/10 rounded-full flex items-center gap-3"
+               href="${pageContext.request.contextPath}/chat">
+                <span class="material-symbols-outlined">forum</span>
+                <span class="text-sm font-medium">Chat</span>
             </a>
         </nav>
         <%-- Profile --%>
@@ -123,11 +128,13 @@
                 <h1 class="text-2xl font-bold text-slate-900">Settings</h1>
                 <p class="text-sm text-slate-500">Manage your account and preferences</p>
             </div>
-            <div class="flex items-center gap-6">
-                <button class="relative text-slate-400 hover:text-slate-600">
+            <div class="flex items-center gap-3">
+                <a href="${pageContext.request.contextPath}/notifications.jsp"
+                   class="relative inline-flex size-11 items-center justify-center rounded-full bg-slate-50 text-slate-500 hover:bg-blue-50 hover:text-[#0052FF] transition-colors"
+                   aria-label="Notifications">
                     <span class="material-symbols-outlined text-[28px]">notifications</span>
                     <span class="absolute top-0 right-0 size-2 bg-red-500 rounded-full border-2 border-[#F7FAFA]"></span>
-                </button>
+                </a>
                 <div class="flex items-center gap-3 pl-6 border-l border-slate-200">
                     <div class="text-right">
                         <p class="text-sm font-bold text-slate-900 leading-none">${sessionScope.loggedInUser.name}</p>
@@ -137,6 +144,11 @@
                         <span class="material-symbols-outlined text-3xl">account_circle</span>
                     </div>
                 </div>
+                <a href="${pageContext.request.contextPath}/logout"
+                   class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Logout
+                </a>
             </div>
         </header>
 

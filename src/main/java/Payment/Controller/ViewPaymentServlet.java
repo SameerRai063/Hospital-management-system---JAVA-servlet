@@ -2,11 +2,13 @@ package Payment.Controller;
 
 import Payment.Model.Payment;
 import Payment.Model.dao.PaymentDAO;
-import utils.DBConnection;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import utils.DBConnection;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -19,35 +21,30 @@ public class ViewPaymentServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ── 1. Auth guard ──────────────────────────────────────────────────
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("loggedInUser") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
-        Connection con = null;
-        try {
-            con = DBConnection.getConnection(); // ✅ actually open the connection
+        try (Connection con = DBConnection.getConnection()) {
             PaymentDAO paymentDAO = new PaymentDAO(con);
+            String search = request.getParameter("search");
 
-            // ── 2. Total revenue ───────────────────────────────────────────
-            double totalRevenue = paymentDAO.getTotalRevenue();
-            request.setAttribute("totalRevenue", totalRevenue);
+            request.setAttribute("totalRevenue", paymentDAO.getTotalRevenue());
+            request.setAttribute("paidCount", paymentDAO.countPaymentsByStatus("completed"));
+            request.setAttribute("pendingCount", paymentDAO.countPaymentsByStatus("pending"));
+            request.setAttribute("pendingAmount", paymentDAO.getPendingAmount());
+            request.setAttribute("failedCount", paymentDAO.countPaymentsByStatus("failed"));
 
-            // ── 3. All payments — set as "billingList" to match JSP ────────
-            List<Payment> payments = paymentDAO.getAllPayments();
-            request.setAttribute("billingList", payments); // ✅ matches ${billingList}
-
+            List<Payment> payments = paymentDAO.getPayments(search);
+            request.setAttribute("billingList", payments);
+            request.setAttribute("search", search);
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Failed to load billing data.");
-        } finally {
-            try { if (con != null) con.close(); } catch (Exception ignored) {}
         }
 
-        // ── 4. Forward to billing JSP ──────────────────────────────────────
-        request.getRequestDispatcher("/admin/billing.jsp")
-                .forward(request, response);
+        request.getRequestDispatcher("/admin/billing.jsp").forward(request, response);
     }
 }

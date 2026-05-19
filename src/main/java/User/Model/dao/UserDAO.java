@@ -14,28 +14,27 @@ public class UserDAO implements UserInterface {
 
     @Override
     public int addUser(User user) throws Exception {
+        String safeName = (user.getName() != null) ? user.getName().trim() : "";
+        String sql = "INSERT INTO users(name, gender, dob, address, phone, email, password, profile_image, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        String sql = "INSERT INTO users(name, gender, dob, address, phone, email, password, profile_image, role) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, safeName);
+            ps.setString(2, user.getGender());
+            ps.setDate(3, user.getDob());
+            ps.setString(4, user.getAddress());
+            ps.setString(5, user.getPhone());
+            ps.setString(6, user.getEmail());
+            ps.setString(7, user.getPassword());
+            ps.setString(8, user.getProfileImage());
+            ps.setString(9, user.getRole());
 
-        PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.executeUpdate();
 
-        ps.setString(1, user.getName());
-        ps.setString(2, user.getGender());
-        ps.setDate(3, user.getDob());
-        ps.setString(4, user.getAddress());
-        ps.setString(5, user.getPhone());
-        ps.setString(6, user.getEmail());
-        ps.setString(7, user.getPassword());
-        ps.setString(8, user.getProfileImage());
-        ps.setString(9, user.getRole());
-
-        ps.executeUpdate();
-
-        ResultSet rs = ps.getGeneratedKeys();
-
-        if (rs.next()) {
-            return rs.getInt(1);
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         }
 
         return 0;
@@ -44,7 +43,7 @@ public class UserDAO implements UserInterface {
     @Override
     public User getUserByEmail(String email) throws Exception {
 
-        String sql = "SELECT * FROM users WHERE email=?";
+        String sql = "SELECT id, name, gender, email, password, role FROM users WHERE email=?";
 
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, email);
@@ -54,7 +53,7 @@ public class UserDAO implements UserInterface {
         if (rs.next()) {
             User u = new User();
             u.setId(rs.getInt("id"));
-            u.setName(rs.getString("name")); // <-- FIXED: Changed from "fullName" to "name"
+            u.setName(rs.getString("name"));
             u.setGender(rs.getString("gender"));
             u.setEmail(rs.getString("email"));
             u.setPassword(rs.getString("password"));
@@ -75,7 +74,7 @@ public class UserDAO implements UserInterface {
         return ps.executeUpdate() > 0;
     }
     public boolean updateUser(User user) throws Exception {
-        String sql = "UPDATE users SET name=?, gender=?, address=?, phone=?, updatedAt=CURRENT_TIMESTAMP WHERE id=?";
+        String sql = "UPDATE users SET name=?, gender=?, address=?, phone=?, updated_at=CURRENT_TIMESTAMP WHERE id=?";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, user.getName());
         ps.setString(2, user.getGender());
